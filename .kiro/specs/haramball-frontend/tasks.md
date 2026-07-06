@@ -295,20 +295,20 @@ Because `HaramBall-Back` is being implemented in parallel, exact endpoint paths,
     - **Property 13: Ownership scoping — the UI only renders entries returned by the backend for the authenticated account; no client-side cross-account state**
     - **Validates: Requirements 7.1, 10.2, 11.2**
 
-- [ ] 18. Final integration and end-to-end verification
-  - [ ] 18.1 Wire full app: providers, gate, screens, error boundary
+- [x] 18. Final integration and end-to-end verification
+  - [x] 18.1 Wire full app: providers, gate, screens, error boundary
     - Confirm `app/_layout.tsx` composes `ErrorBoundary`, `QueryClientProvider`, `LockOverlay`, and route groups correctly on native and web builds
     - _Requirements: 13.1, 13.2, 13.4_
 
-  - [ ]* 18.2 Write end-to-end test for the full user journey
+  - [x]* 18.2 Write end-to-end test for the full user journey
     - Test register → login → create entry → list/search by title/tag → copy → edit → delete → logout → relock, against a mocked API layer, asserting no plaintext leaks while locked
     - _Requirements: 1.1, 2.1, 6.1, 7.1, 8.1, 9.1, 10.1, 11.1, 15.2_
 
-  - [ ] 18.3 Re-confirm Open Integration Points against final HaramBall-Back
+  - [x] 18.3 Re-confirm Open Integration Points against final HaramBall-Back
     - Re-check exact endpoint paths/field names, search request shape (equality-match semantics on stored prefix sets), max entry size (413), 400 validation field structure, and whether refresh rotates the refresh token; update API client/SearchService/SecureStore persistence accordingly
     - _Requirements: 14.1, 14.5_
 
-- [ ] 19. Final checkpoint - Ensure all tests pass
+- [x] 19. Final checkpoint - Ensure all tests pass
   - Ensure `npm test`, `npx tsc --noEmit`, and a manual smoke test on web (and native simulator if available) all pass end-to-end. Ask the user if questions arise.
 
 ## Notes
