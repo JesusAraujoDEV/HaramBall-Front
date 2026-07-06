@@ -15,14 +15,14 @@ jest.mock('expo-router', () => ({
   useRouter: () => ({ replace: mockReplace, push: mockPush }),
 }));
 
-jest.mock('../../../src/services/EntryService', () => ({
+jest.mock('../src/services/EntryService', () => ({
   EntryService: { get: jest.fn(), remove: jest.fn() },
 }));
 
-import sodium, { ready } from '../../../src/crypto/sodium';
-import { EntryService } from '../../../src/services/EntryService';
-import useVaultStore from '../../../src/vault/vaultStore';
-import EntryDetailScreen from './[id]';
+import sodium, { ready } from '../src/crypto/sodium';
+import { EntryService } from '../src/services/EntryService';
+import useVaultStore from '../src/vault/vaultStore';
+import EntryDetailScreen from '../app/(vault)/entry/[id]';
 
 function renderWithClient(ui: React.ReactElement) {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });

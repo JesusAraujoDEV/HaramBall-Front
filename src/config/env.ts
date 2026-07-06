@@ -57,6 +57,21 @@ export function validateEnv(raw: Record<string, string | undefined>): Env {
 let cachedEnv: Env | undefined;
 
 /**
+ * Builds the raw env record from individual `process.env.EXPO_PUBLIC_*`
+ * accesses so that Metro/Babel can inline each one at compile time.
+ * Accessing `process.env` as a whole object does NOT get inlined by Expo's
+ * build pipeline, which causes `process` to be undefined in web at runtime.
+ */
+function getRawEnv(): Record<string, string | undefined> {
+  return {
+    EXPO_PUBLIC_API_BASE_URL: process.env.EXPO_PUBLIC_API_BASE_URL,
+    EXPO_PUBLIC_LOCK_TIMEOUT_MS: process.env.EXPO_PUBLIC_LOCK_TIMEOUT_MS,
+    EXPO_PUBLIC_CLIPBOARD_CLEAR_MS: process.env.EXPO_PUBLIC_CLIPBOARD_CLEAR_MS,
+    EXPO_PUBLIC_ARGON2_PROFILE: process.env.EXPO_PUBLIC_ARGON2_PROFILE,
+  };
+}
+
+/**
  * Lazily validated singleton over `process.env`. Deferred (rather than
  * validated at module load) so importing this module in a test file does
  * not require a populated environment; the app's root layout calls
@@ -64,7 +79,7 @@ let cachedEnv: Env | undefined;
  */
 export function getEnv(): Env {
   if (!cachedEnv) {
-    cachedEnv = validateEnv(process.env as Record<string, string | undefined>);
+    cachedEnv = validateEnv(getRawEnv());
   }
   return cachedEnv;
 }

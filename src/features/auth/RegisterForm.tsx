@@ -62,20 +62,31 @@ export function RegisterForm(): React.ReactElement {
   }
 
   return (
-    <View className="gap-4 p-6">
-      <Text className="text-2xl font-bold text-gray-900">Create your vault</Text>
+    <View className="w-full max-w-md gap-5 self-center rounded-3xl border border-slate-200 bg-white p-8 shadow-xl">
+      <View className="items-center gap-3">
+        <View className="h-14 w-14 items-center justify-center rounded-2xl bg-blue-600 shadow-md">
+          <Text className="text-2xl font-bold text-white">H</Text>
+        </View>
+        <View className="items-center">
+          <Text className="text-2xl font-bold text-slate-900">Create your vault</Text>
+          <Text className="mt-1 text-sm text-slate-500">Set up your encrypted password vault</Text>
+        </View>
+      </View>
 
-      <View className="rounded-lg bg-amber-50 p-3">
-        <Text className="text-amber-800">
+      <View className="flex-row gap-3 rounded-xl border border-amber-200 bg-amber-50 p-3">
+        <Text className="text-base">⚠️</Text>
+        <Text className="flex-1 text-sm leading-5 text-amber-800">
           Your Master Password cannot be recovered. If you forget it, your existing entries become
           permanently unreadable.
         </Text>
       </View>
 
-      <View>
-        <Text className="mb-1 text-gray-700">Email</Text>
+      <View className="gap-1.5">
+        <Text className="text-sm font-medium text-slate-700">Email</Text>
         <TextInput
-          className="rounded-lg border border-gray-300 px-3 py-2"
+          className="h-12 rounded-xl border border-slate-300 bg-slate-50 px-4 text-base text-slate-900 focus:border-blue-500 focus:bg-white"
+          placeholder="you@example.com"
+          placeholderTextColor="#94a3b8"
           autoCapitalize="none"
           autoComplete="email"
           keyboardType="email-address"
@@ -83,50 +94,64 @@ export function RegisterForm(): React.ReactElement {
           onChangeText={setEmail}
           testID="register-email"
         />
-        {fieldErrors.email ? <Text className="mt-1 text-red-600">{fieldErrors.email}</Text> : null}
+        {fieldErrors.email ? <Text className="text-sm text-red-600">{fieldErrors.email}</Text> : null}
       </View>
 
-      <View>
-        <Text className="mb-1 text-gray-700">Master Password</Text>
+      <View className="gap-1.5">
+        <Text className="text-sm font-medium text-slate-700">Master Password</Text>
         <TextInput
-          className="rounded-lg border border-gray-300 px-3 py-2"
+          className="h-12 rounded-xl border border-slate-300 bg-slate-50 px-4 text-base text-slate-900 focus:border-blue-500 focus:bg-white"
+          placeholder="••••••••••••"
+          placeholderTextColor="#94a3b8"
           secureTextEntry
           value={masterPassword}
           onChangeText={setMasterPassword}
           testID="register-password"
         />
         {fieldErrors.masterPassword ? (
-          <Text className="mt-1 text-red-600">{fieldErrors.masterPassword}</Text>
+          <Text className="text-sm text-red-600">{fieldErrors.masterPassword}</Text>
         ) : null}
       </View>
 
-      <View>
-        <Text className="mb-1 text-gray-700">Confirm Master Password</Text>
+      <View className="gap-1.5">
+        <Text className="text-sm font-medium text-slate-700">Confirm Master Password</Text>
         <TextInput
-          className="rounded-lg border border-gray-300 px-3 py-2"
+          className="h-12 rounded-xl border border-slate-300 bg-slate-50 px-4 text-base text-slate-900 focus:border-blue-500 focus:bg-white"
+          placeholder="••••••••••••"
+          placeholderTextColor="#94a3b8"
           secureTextEntry
           value={confirmPassword}
           onChangeText={setConfirmPassword}
           testID="register-confirm-password"
         />
         {fieldErrors.confirmPassword ? (
-          <Text className="mt-1 text-red-600">{fieldErrors.confirmPassword}</Text>
+          <Text className="text-sm text-red-600">{fieldErrors.confirmPassword}</Text>
         ) : null}
       </View>
 
-      {formError ? <Text className="text-red-600">{formError}</Text> : null}
+      {formError ? (
+        <View className="rounded-xl border border-red-200 bg-red-50 px-4 py-3">
+          <Text className="text-sm text-red-700">{formError}</Text>
+        </View>
+      ) : null}
 
       <Pressable
         onPress={handleSubmit}
         disabled={submitting}
-        className="items-center rounded-lg bg-blue-600 py-3 disabled:opacity-60"
+        className="mt-1 h-12 items-center justify-center rounded-xl bg-blue-600 shadow-sm active:bg-blue-700 disabled:opacity-60"
         testID="register-submit"
       >
-        {submitting ? <ActivityIndicator color="#fff" /> : <Text className="font-medium text-white">Register</Text>}
+        {submitting ? (
+          <ActivityIndicator color="#fff" />
+        ) : (
+          <Text className="text-base font-semibold text-white">Register</Text>
+        )}
       </Pressable>
 
-      <Pressable onPress={() => router.replace('/login')}>
-        <Text className="text-center text-blue-600">Already have an account? Log in</Text>
+      <Pressable onPress={() => router.replace('/login')} className="py-1">
+        <Text className="text-center text-sm text-slate-500">
+          Already have an account? <Text className="font-semibold text-blue-600">Log in</Text>
+        </Text>
       </Pressable>
     </View>
   );

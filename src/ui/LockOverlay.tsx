@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { AppState, Platform, View, Text, StyleSheet, type AppStateStatus } from 'react-native';
 import Animated, { FadeIn, FadeOut } from 'react-native-reanimated';
+import { useSegments } from 'expo-router';
 import useVaultStore from '../vault/vaultStore';
 
 /**
@@ -36,8 +37,16 @@ function useNativeBackgroundCover(): boolean {
 export function LockOverlay(): React.ReactElement | null {
   const status = useVaultStore((s) => s.status);
   const backgrounded = useNativeBackgroundCover();
+  const segments = useSegments();
 
-  if (status === 'unlocked' && !backgrounded) {
+  // The auth (login/register) screens render precisely while the vault is
+  // locked/unlocking and contain no decrypted content to protect, so the
+  // cover must not sit over them — otherwise it intercepts touches/keyboard
+  // input and blocks the user from ever logging in (Property 12 still holds:
+  // there is no plaintext underneath here).
+  const inAuthGroup = segments[0] === '(auth)';
+
+  if (inAuthGroup || (status === 'unlocked' && !backgrounded)) {
     return null;
   }
 
