@@ -212,37 +212,37 @@ Because `HaramBall-Back` is being implemented in parallel, exact endpoint paths,
 - [x] 11. Checkpoint - Ensure vault store passes tests
   - Ensure `npm test src/vault` passes and `npx tsc --noEmit` is clean. Ask the user if questions arise.
 
-- [ ] 12. Implement root app shell and navigation
-  - [ ] 12.1 Implement root layout with providers and auth gate
+- [x] 12. Implement root app shell and navigation
+  - [x] 12.1 Implement root layout with providers and auth gate
     - Create `app/_layout.tsx`: wraps the tree in `QueryClientProvider`, initializes crypto (`sodium.ready`), subscribes to `vaultStore`, routes to `(auth)` when locked/no tokens and `(vault)` when unlocked
     - _Requirements: 3.5, 4.6_
 
-  - [ ] 12.2 Implement LockOverlay component
+  - [x] 12.2 Implement LockOverlay component
     - Create `src/ui/LockOverlay.tsx`: full-screen blur/cover shown when `status !== 'unlocked'` or on native `AppState` `inactive`/`background` (Reanimated fade)
     - _Requirements: 4.6, 15.3_
 
-  - [ ]* 12.3 Write component test for LockOverlay (Property 12: locked implies no plaintext)
+  - [x]* 12.3 Write component test for LockOverlay (Property 12: locked implies no plaintext)
     - **Property 12: Locked implies no plaintext — while `status !== 'unlocked'`, no decrypted entry content is present in any rendered component**
     - **Validates: Requirements 3.5, 4.6, 15.2**
 
-  - [ ] 12.4 Implement top-level error boundary
+  - [x] 12.4 Implement top-level error boundary
     - Create `src/ui/ErrorBoundary.tsx` catching render errors and showing a safe fallback without leaking state/stack traces
     - _Requirements: 14.3_
 
-- [ ] 13. Implement auth screens
-  - [ ] 13.1 Implement RegisterScreen
+- [x] 13. Implement auth screens
+  - [x] 13.1 Implement RegisterScreen
     - Create `app/(auth)/register.tsx` + `src/features/auth/RegisterForm.tsx`: email + masterPassword + confirmation fields, Zod validation (email format, password ≥ 12 chars, confirmation match), prominent "forgotten password = unrecoverable" warning, loading state guarding duplicate submission, 409 → "email already in use" message
     - _Requirements: 1.4, 1.5, 1.6, 1.7, 1.8, 1.9_
 
-  - [ ] 13.2 Implement LoginScreen
+  - [x] 13.2 Implement LoginScreen
     - Create `app/(auth)/login.tsx` + `src/features/auth/LoginForm.tsx`: email + masterPassword fields, loading state guarding duplicate submission, generic 401 message, 429 message with `Retry-After` countdown
     - _Requirements: 2.3, 2.4, 2.6_
 
-  - [ ]* 13.3 Write component tests for auth forms
+  - [x]* 13.3 Write component tests for auth forms
     - Test validation blocking (short password, mismatched confirmation, invalid email), duplicate-submission guard, and error message rendering for 409/401/429
     - _Requirements: 1.4, 1.5, 1.6, 2.3, 2.4_
 
-- [ ] 14. Checkpoint - Ensure auth flow works end-to-end
+- [x] 14. Checkpoint - Ensure auth flow works end-to-end
   - Ensure register/login screens compile, tests pass, and the auth gate in `app/_layout.tsx` routes correctly on mock unlock/lock transitions. Ask the user if questions arise.
 
 - [ ] 15. Implement vault list, search, and entry screens

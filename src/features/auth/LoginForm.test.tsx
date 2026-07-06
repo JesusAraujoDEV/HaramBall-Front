@@ -23,9 +23,9 @@ describe('LoginForm', () => {
 
   it('blocks submission and shows a message for an invalid email', async () => {
     const { getByTestId, findByText } = await render(<LoginForm />);
-    fireEvent.changeText(getByTestId('login-email'), 'not-an-email');
-    fireEvent.changeText(getByTestId('login-password'), 'anything');
-    fireEvent.press(getByTestId('login-submit'));
+    await fireEvent.changeText(getByTestId('login-email'), 'not-an-email');
+    await fireEvent.changeText(getByTestId('login-password'), 'anything');
+    await fireEvent.press(getByTestId('login-submit'));
 
     await findByText(/valid email/i);
   });
@@ -37,9 +37,9 @@ describe('LoginForm', () => {
     useVaultStore.setState({ unlockWithPassword: unlockSpy as unknown as VaultState['unlockWithPassword'] });
 
     const { getByTestId, findByText } = await render(<LoginForm />);
-    fireEvent.changeText(getByTestId('login-email'), 'user@example.com');
-    fireEvent.changeText(getByTestId('login-password'), 'wrongpassword');
-    fireEvent.press(getByTestId('login-submit'));
+    await fireEvent.changeText(getByTestId('login-email'), 'user@example.com');
+    await fireEvent.changeText(getByTestId('login-password'), 'wrongpassword');
+    await fireEvent.press(getByTestId('login-submit'));
 
     await findByText(/incorrect email or password/i);
   });
@@ -51,9 +51,9 @@ describe('LoginForm', () => {
     useVaultStore.setState({ unlockWithPassword: unlockSpy as unknown as VaultState['unlockWithPassword'] });
 
     const { getByTestId, findByText } = await render(<LoginForm />);
-    fireEvent.changeText(getByTestId('login-email'), 'user@example.com');
-    fireEvent.changeText(getByTestId('login-password'), 'password123456');
-    fireEvent.press(getByTestId('login-submit'));
+    await fireEvent.changeText(getByTestId('login-email'), 'user@example.com');
+    await fireEvent.changeText(getByTestId('login-password'), 'password123456');
+    await fireEvent.press(getByTestId('login-submit'));
 
     await findByText(/try again in 30s/i);
   });
@@ -63,9 +63,9 @@ describe('LoginForm', () => {
     useVaultStore.setState({ unlockWithPassword: unlockSpy as unknown as VaultState['unlockWithPassword'] });
 
     const { getByTestId } = await render(<LoginForm />);
-    fireEvent.changeText(getByTestId('login-email'), 'user@example.com');
-    fireEvent.changeText(getByTestId('login-password'), 'password123456');
-    fireEvent.press(getByTestId('login-submit'));
+    await fireEvent.changeText(getByTestId('login-email'), 'user@example.com');
+    await fireEvent.changeText(getByTestId('login-password'), 'password123456');
+    await fireEvent.press(getByTestId('login-submit'));
 
     await waitFor(() => expect(unlockSpy).toHaveBeenCalledWith('user@example.com', 'password123456'));
     await waitFor(() => expect(mockReplace).toHaveBeenCalledWith('/'));
@@ -79,11 +79,14 @@ describe('LoginForm', () => {
     useVaultStore.setState({ unlockWithPassword: unlockSpy as unknown as VaultState['unlockWithPassword'] });
 
     const { getByTestId } = await render(<LoginForm />);
-    fireEvent.changeText(getByTestId('login-email'), 'user@example.com');
-    fireEvent.changeText(getByTestId('login-password'), 'password123456');
+    await fireEvent.changeText(getByTestId('login-email'), 'user@example.com');
+    await fireEvent.changeText(getByTestId('login-password'), 'password123456');
 
-    fireEvent.press(getByTestId('login-submit'));
-    fireEvent.press(getByTestId('login-submit'));
+    // Fire both presses without awaiting individually: the first press's
+    // handler never resolves until `resolveUnlock()` below, so awaiting it
+    // here would deadlock the test (see the equivalent RegisterForm test).
+    void fireEvent.press(getByTestId('login-submit'));
+    void fireEvent.press(getByTestId('login-submit'));
 
     resolveUnlock();
     await waitFor(() => expect(unlockSpy).toHaveBeenCalledTimes(1));

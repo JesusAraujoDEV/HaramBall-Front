@@ -24,10 +24,10 @@ describe('RegisterForm', () => {
 
   it('blocks submission and shows a message for a short password', async () => {
     const { getByTestId, findByText } = await render(<RegisterForm />);
-    fireEvent.changeText(getByTestId('register-email'), 'user@example.com');
-    fireEvent.changeText(getByTestId('register-password'), 'short');
-    fireEvent.changeText(getByTestId('register-confirm-password'), 'short');
-    fireEvent.press(getByTestId('register-submit'));
+    await fireEvent.changeText(getByTestId('register-email'), 'user@example.com');
+    await fireEvent.changeText(getByTestId('register-password'), 'short');
+    await fireEvent.changeText(getByTestId('register-confirm-password'), 'short');
+    await fireEvent.press(getByTestId('register-submit'));
 
     await findByText(/at least 12 characters/i);
     expect(AuthService.register).not.toHaveBeenCalled();
@@ -35,10 +35,10 @@ describe('RegisterForm', () => {
 
   it('blocks submission and shows a message for mismatched confirmation', async () => {
     const { getByTestId, findByText } = await render(<RegisterForm />);
-    fireEvent.changeText(getByTestId('register-email'), 'user@example.com');
-    fireEvent.changeText(getByTestId('register-password'), 'correcthorsebattery');
-    fireEvent.changeText(getByTestId('register-confirm-password'), 'different-password');
-    fireEvent.press(getByTestId('register-submit'));
+    await fireEvent.changeText(getByTestId('register-email'), 'user@example.com');
+    await fireEvent.changeText(getByTestId('register-password'), 'correcthorsebattery');
+    await fireEvent.changeText(getByTestId('register-confirm-password'), 'different-password');
+    await fireEvent.press(getByTestId('register-submit'));
 
     await findByText(/do not match/i);
     expect(AuthService.register).not.toHaveBeenCalled();
@@ -46,10 +46,10 @@ describe('RegisterForm', () => {
 
   it('blocks submission and shows a message for an invalid email', async () => {
     const { getByTestId, findByText } = await render(<RegisterForm />);
-    fireEvent.changeText(getByTestId('register-email'), 'not-an-email');
-    fireEvent.changeText(getByTestId('register-password'), 'correcthorsebattery');
-    fireEvent.changeText(getByTestId('register-confirm-password'), 'correcthorsebattery');
-    fireEvent.press(getByTestId('register-submit'));
+    await fireEvent.changeText(getByTestId('register-email'), 'not-an-email');
+    await fireEvent.changeText(getByTestId('register-password'), 'correcthorsebattery');
+    await fireEvent.changeText(getByTestId('register-confirm-password'), 'correcthorsebattery');
+    await fireEvent.press(getByTestId('register-submit'));
 
     await findByText(/valid email/i);
     expect(AuthService.register).not.toHaveBeenCalled();
@@ -58,10 +58,10 @@ describe('RegisterForm', () => {
   it('submits and navigates to login on success', async () => {
     (AuthService.register as jest.Mock).mockResolvedValue(undefined);
     const { getByTestId } = await render(<RegisterForm />);
-    fireEvent.changeText(getByTestId('register-email'), 'user@example.com');
-    fireEvent.changeText(getByTestId('register-password'), 'correcthorsebattery');
-    fireEvent.changeText(getByTestId('register-confirm-password'), 'correcthorsebattery');
-    fireEvent.press(getByTestId('register-submit'));
+    await fireEvent.changeText(getByTestId('register-email'), 'user@example.com');
+    await fireEvent.changeText(getByTestId('register-password'), 'correcthorsebattery');
+    await fireEvent.changeText(getByTestId('register-confirm-password'), 'correcthorsebattery');
+    await fireEvent.press(getByTestId('register-submit'));
 
     await waitFor(() => expect(AuthService.register).toHaveBeenCalledWith('user@example.com', 'correcthorsebattery'));
     await waitFor(() => expect(mockReplace).toHaveBeenCalledWith('/login'));
@@ -72,10 +72,10 @@ describe('RegisterForm', () => {
       new ApiError('EMAIL_ALREADY_EXISTS', 'Email already registered', 409),
     );
     const { getByTestId, findByText } = await render(<RegisterForm />);
-    fireEvent.changeText(getByTestId('register-email'), 'user@example.com');
-    fireEvent.changeText(getByTestId('register-password'), 'correcthorsebattery');
-    fireEvent.changeText(getByTestId('register-confirm-password'), 'correcthorsebattery');
-    fireEvent.press(getByTestId('register-submit'));
+    await fireEvent.changeText(getByTestId('register-email'), 'user@example.com');
+    await fireEvent.changeText(getByTestId('register-password'), 'correcthorsebattery');
+    await fireEvent.changeText(getByTestId('register-confirm-password'), 'correcthorsebattery');
+    await fireEvent.press(getByTestId('register-submit'));
 
     await findByText(/already registered/i);
   });
@@ -86,13 +86,18 @@ describe('RegisterForm', () => {
       () => new Promise<void>((resolve) => { resolveRegister = resolve; }),
     );
     const { getByTestId } = await render(<RegisterForm />);
-    fireEvent.changeText(getByTestId('register-email'), 'user@example.com');
-    fireEvent.changeText(getByTestId('register-password'), 'correcthorsebattery');
-    fireEvent.changeText(getByTestId('register-confirm-password'), 'correcthorsebattery');
+    await fireEvent.changeText(getByTestId('register-email'), 'user@example.com');
+    await fireEvent.changeText(getByTestId('register-password'), 'correcthorsebattery');
+    await fireEvent.changeText(getByTestId('register-confirm-password'), 'correcthorsebattery');
 
-    fireEvent.press(getByTestId('register-submit'));
-    fireEvent.press(getByTestId('register-submit'));
-    fireEvent.press(getByTestId('register-submit'));
+    // Fire all three presses without awaiting individually: the first
+    // press's handler never resolves until `resolveRegister()` below, so
+    // awaiting it here would deadlock the test. `submitting` is set
+    // synchronously before the in-flight await, so the 2nd/3rd presses are
+    // still guarded correctly even though they're dispatched immediately.
+    void fireEvent.press(getByTestId('register-submit'));
+    void fireEvent.press(getByTestId('register-submit'));
+    void fireEvent.press(getByTestId('register-submit'));
 
     resolveRegister();
     await waitFor(() => expect(AuthService.register).toHaveBeenCalledTimes(1));

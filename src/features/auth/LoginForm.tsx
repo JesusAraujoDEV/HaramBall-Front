@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { View, Text, TextInput, Pressable, ActivityIndicator } from 'react-native';
 import { useRouter } from 'expo-router';
 import useVaultStore from '../../vault/vaultStore';
@@ -21,6 +21,11 @@ export function LoginForm(): React.ReactElement {
   const [formError, setFormError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [retryAfter, setRetryAfter] = useState<number | null>(null);
+  // A ref (not just the `submitting` state) guards re-entrancy: React state
+  // updates are batched/async, so two synchronous button presses in the
+  // same tick would both see the stale `submitting === false` value if we
+  // only checked state. The ref is updated immediately and synchronously.
+  const submittingRef = useRef(false);
 
   useEffect(() => {
     if (retryAfter === null || retryAfter <= 0) return;
@@ -29,7 +34,8 @@ export function LoginForm(): React.ReactElement {
   }, [retryAfter]);
 
   async function handleSubmit(): Promise<void> {
-    if (submitting) return; // guard against duplicate submissions (Requirement 2.6)
+    if (submittingRef.current) return; // guard against duplicate submissions (Requirement 2.6)
+    submittingRef.current = true;
     setFormError(null);
 
     const result = loginSchema.safeParse({ email, masterPassword });
@@ -42,6 +48,7 @@ export function LoginForm(): React.ReactElement {
         }
       }
       setFieldErrors(errors);
+      submittingRef.current = false;
       return;
     }
     setFieldErrors({});
@@ -65,6 +72,7 @@ export function LoginForm(): React.ReactElement {
         setFormError(toUserMessage(err));
       }
     } finally {
+      submittingRef.current = false;
       setSubmitting(false);
     }
   }

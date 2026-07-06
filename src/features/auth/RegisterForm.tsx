@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { View, Text, TextInput, Pressable, ActivityIndicator } from 'react-native';
 import { useRouter } from 'expo-router';
 import { AuthService } from '../../services/AuthService';
@@ -19,9 +19,15 @@ export function RegisterForm(): React.ReactElement {
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [formError, setFormError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  // A ref (not just the `submitting` state) guards re-entrancy: React state
+  // updates are batched/async, so two synchronous button presses in the
+  // same tick would both see the stale `submitting === false` value if we
+  // only checked state. The ref is updated immediately and synchronously.
+  const submittingRef = useRef(false);
 
   async function handleSubmit(): Promise<void> {
-    if (submitting) return; // guard against duplicate submissions (Requirement 1.4 loading)
+    if (submittingRef.current) return; // guard against duplicate submissions (Requirement 1.4 loading)
+    submittingRef.current = true;
     setFormError(null);
 
     const result = registerSchema.safeParse({ email, masterPassword, confirmPassword });
@@ -34,6 +40,7 @@ export function RegisterForm(): React.ReactElement {
         }
       }
       setFieldErrors(errors);
+      submittingRef.current = false;
       return;
     }
     setFieldErrors({});
@@ -49,6 +56,7 @@ export function RegisterForm(): React.ReactElement {
         setFormError(toUserMessage(err));
       }
     } finally {
+      submittingRef.current = false;
       setSubmitting(false);
     }
   }

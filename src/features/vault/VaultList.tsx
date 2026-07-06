@@ -1,0 +1,133 @@
+import React, { useMemo, useState } from 'react';
+import { ActivityIndicator, FlatList, Pressable, Text, View } from 'react-native';
+import { useRouter } from 'expo-router';
+import { useQuery } from '@tanstack/react-query';
+import useVaultStore from '../../vault/vaultStore';
+import { EntryService } from '../../services/EntryService';
+import { SearchService } from '../../services/SearchService';
+import { SearchBar } from '../../ui/SearchBar';
+import { EntryCard } from '../../ui/EntryCard';
+import { toUserMessage } from '../../utils/errorMessages';
+import type { PlainEntry } from '../../services/types';
+
+/**
+ * Chat-style vault list: fetches + decrypts entries via TanStack Query on
+ * unlock, supports title search and tag filtering with debounce, and shows
+ * empty states rather than errors for no-match cases (Requirements 7.1,
+ * 7.3, 7.5, 10.1, 10.2, 10.4, 10.5, 10.6, 11.1-11.4).
+ */
+export function VaultList(): React.ReactElement {
+  const router = useRouter();
+  const keys = useVaultStore((s) => s.keys);
+  const [query, setQuery] = useState('');
+  const [tagFilter, setTagFilter] = useState<string | null>(null);
+
+  const listQuery = useQuery({
+    queryKey: ['entries', 'list'],
+    queryFn: () => EntryService.list(keys!),
+    enabled: keys !== null && query.trim().length === 0 && tagFilter === null,
+  });
+
+  const titleSearchQuery = useQuery({
+    queryKey: ['entries', 'search', 'title', query],
+    queryFn: () => SearchService.byTitle(query, keys!),
+    enabled: keys !== null && query.trim().length > 0,
+  });
+
+  const tagSearchQuery = useQuery({
+    queryKey: ['entries', 'search', 'tags', tagFilter],
+    queryFn: () => SearchService.byTags([tagFilter as string], keys!),
+    enabled: keys !== null && tagFilter !== null,
+  });
+
+  const isSearching = query.trim().length > 0;
+  const isTagFiltering = tagFilter !== null;
+  const activeQuery = isSearching ? titleSearchQuery : isTagFiltering ? tagSearchQuery : listQuery;
+
+  const entries: PlainEntry[] = activeQuery.data ?? [];
+
+  const allTags = useMemo(() => {
+    const set = new Set<string>();
+    for (const entry of listQuery.data ?? []) {
+      for (const tag of entry.tags) set.add(tag);
+    }
+    return Array.from(set).sort();
+  }, [listQuery.data]);
+
+  function handleOpenEntry(entry: PlainEntry): void {
+    router.push(`/entry/${entry.id}`);
+  }
+
+  function clearSearch(): void {
+    setQuery('');
+  }
+
+  function clearTagFilter(): void {
+    setTagFilter(null);
+  }
+
+  return (
+    <View className="flex-1 bg-white">
+      <SearchBar value={query} onChangeDebounced={setQuery} testID="vault-search-bar" />
+
+      {allTags.length > 0 ? (
+        <View className="flex-row flex-wrap gap-2 border-b border-gray-100 px-4 py-2">
+          {allTags.map((tag) => (
+            <Pressable
+              key={tag}
+              onPress={() => setTagFilter(tagFilter === tag ? null : tag)}
+              testID={`tag-filter-${tag}`}
+              className={`rounded-full px-3 py-1 ${tagFilter === tag ? 'bg-blue-600' : 'bg-gray-100'}`}
+            >
+              <Text className={tagFilter === tag ? 'text-white' : 'text-gray-700'}>{tag}</Text>
+            </Pressable>
+          ))}
+          {tagFilter ? (
+            <Pressable onPress={clearTagFilter} testID="tag-filter-clear">
+              <Text className="text-blue-600">Clear filter</Text>
+            </Pressable>
+          ) : null}
+        </View>
+      ) : null}
+
+      {isSearching ? (
+        <Pressable onPress={clearSearch} className="px-4 py-1">
+          <Text className="text-blue-600">Clear search</Text>
+        </Pressable>
+      ) : null}
+
+      {activeQuery.isLoading ? (
+        <View className="flex-1 items-center justify-center">
+          <ActivityIndicator />
+        </View>
+      ) : activeQuery.isError ? (
+        <View className="flex-1 items-center justify-center px-6">
+          <Text className="text-center text-red-600">{toUserMessage(activeQuery.error)}</Text>
+        </View>
+      ) : entries.length === 0 ? (
+        <View className="flex-1 items-center justify-center px-6" testID="vault-empty-state">
+          <Text className="text-center text-gray-500">
+            {isSearching || isTagFiltering ? 'No matching entries.' : 'No entries yet. Create your first one.'}
+          </Text>
+        </View>
+      ) : (
+        <FlatList
+          data={entries}
+          keyExtractor={(item) => item.id}
+          renderItem={({ item }) => <EntryCard entry={item} onPress={handleOpenEntry} />}
+          testID="vault-list"
+        />
+      )}
+
+      <Pressable
+        onPress={() => router.push('/entry/new')}
+        className="absolute bottom-6 right-6 h-14 w-14 items-center justify-center rounded-full bg-blue-600"
+        testID="vault-new-entry"
+      >
+        <Text className="text-2xl text-white">+</Text>
+      </Pressable>
+    </View>
+  );
+}
+
+export default VaultList;
