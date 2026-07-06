@@ -1,0 +1,30 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`contract vectors locks the Master_Key/subkey derivation for a fixed password + email: authHash 1`] = `"NaKwYO/mizmrdDISAeAa3buhDM6sk3Jmt9bXwLAqc+4="`;
+
+exports[`contract vectors locks the Master_Key/subkey derivation for a fixed password + email: encryptionKey 1`] = `"7PMJZOPRY+mIiR4F6QD6ue8DqTW2sPFdwFSp9qcU1ms="`;
+
+exports[`contract vectors locks the Master_Key/subkey derivation for a fixed password + email: indexKey 1`] = `"nNTFKoTbqCscMCS2qyUHtmiobQMHAUN73YSuYbkCFtM="`;
+
+exports[`contract vectors locks the blind index for a fixed tag value: tag-blind-index 1`] = `"02VxfKKxeg3UnJqow8804w=="`;
+
+exports[`contract vectors locks the title prefix index set for a fixed title: title-prefix-real-members 1`] = `
+[
+  "02VxfKKxeg3UnJqow8804w==",
+  "2UQ0hxV2dVq2KsU3I6vPTQ==",
+  "5EU+PCysui/a0BC3N+LHZA==",
+  "5pN8JGRrQod4PXiH6ZsMXg==",
+  "7iFUuRapZzIZfzqKMs4omQ==",
+  "9fKcJ92w1Chca/NINM8jqA==",
+  "9jLT3y6dRnFgYyXJFUkdQA==",
+  "Ne96Prfcixmhur5XIpMXJg==",
+  "T8TFHe4NnUHNVxcokgpVnQ==",
+  "VJo8O6pA+I1ATHJXzmE0aA==",
+  "aY/K5Ef8HRvjWPnPfpIAXw==",
+  "at7PhTSsw2pLjNOZIs2a3A==",
+  "gm3/iERkvCXQZI1Ie8P2OQ==",
+  "hlxyFvfWzJwVFjX9qdJlzw==",
+  "mujoF3DAHK7+VVqRL9dD/A==",
+  "qlc8p2ZAC2WgcTubat7v4w==",
+]
+`;

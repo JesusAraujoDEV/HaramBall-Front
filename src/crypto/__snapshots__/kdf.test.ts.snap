@@ -1,0 +1,9 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`kdf known-answer vector: fixed password/email derive a fixed Master_Key and subkeys: auth-hash 1`] = `"WLvqsskfGefEt0zOvYTzFiw4hr146ZVvgrqc3B6rc+E="`;
+
+exports[`kdf known-answer vector: fixed password/email derive a fixed Master_Key and subkeys: encryption-key 1`] = `"rnrj4gtC7okEE8BGdSJKPXA98Hms+i0OykifWjGQmzI="`;
+
+exports[`kdf known-answer vector: fixed password/email derive a fixed Master_Key and subkeys: index-key 1`] = `"FFcTgdnZxP9EcJQubgfbEFc7U5qAsGHQVbbdL1lTUQo="`;
+
+exports[`kdf known-answer vector: fixed password/email derive a fixed Master_Key and subkeys: master-key 1`] = `"zui6aqWjNFpH1yg5p4tc+wxMTbJyjgxsuXJNOCrjYNU="`;

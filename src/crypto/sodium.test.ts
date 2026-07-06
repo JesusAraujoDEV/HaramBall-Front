@@ -15,8 +15,8 @@ describe('sodium', () => {
       32,
       'test-password',
       salt,
-      sodium.crypto_pwhash_OPSLIMIT_INTERACTIVE ?? 2,
-      sodium.crypto_pwhash_MEMLIMIT_INTERACTIVE ?? 67108864,
+      sodium.crypto_pwhash_OPSLIMIT_INTERACTIVE,
+      sodium.crypto_pwhash_MEMLIMIT_INTERACTIVE,
       sodium.crypto_pwhash_ALG_ARGON2ID13,
       'uint8array',
     );
