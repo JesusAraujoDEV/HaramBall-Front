@@ -146,43 +146,43 @@ Because `HaramBall-Back` is being implemented in parallel, exact endpoint paths,
 - [x] 7. Checkpoint - Ensure API client passes tests
   - Ensure `npm test src/api` passes and `npx tsc --noEmit` is clean. Ask the user if questions arise.
 
-- [ ] 8. Implement domain services
-  - [ ] 8.1 Implement AuthService
+- [x] 8. Implement domain services
+  - [x] 8.1 Implement AuthService
     - Create `src/services/AuthService.ts`: `register(email, masterPassword)` derives keys and calls `api/auth.register` sending only `authHash`; `login(email, masterPassword)` derives keys, calls `api/auth.login`, returns `{ keys, tokens }`; `logout()` calls `api/auth.logout` then clears local state
     - _Requirements: 1.1, 1.2, 1.3, 2.1, 2.2, 3.3_
 
-  - [ ]* 8.2 Write unit tests for AuthService
+  - [x]* 8.2 Write unit tests for AuthService
     - Assert only `authHash` (never masterPassword/masterKey) is sent in the login/register request bodies (mocked API, real crypto)
     - _Requirements: 1.3, 2.1_
 
-  - [ ] 8.3 Implement EntryService
+  - [x] 8.3 Implement EntryService
     - Create `src/services/EntryService.ts`: `list()`/`get(id)` fetch + decrypt; `create(title, body, tags)` encrypts title/body/tags, builds `titleIndex`/`tagIndexes`, posts, returns `PlainEntry`; `update(id, ...)` re-encrypts + rebuilds indexes; `remove(id)` deletes
     - Use `src/utils/entryText.ts` `parseEntryText`/serialize helpers for title/body split
     - _Requirements: 6.1, 6.2, 6.3, 6.4, 7.1, 7.2, 8.1, 8.2, 8.4, 9.2_
 
-  - [ ]* 8.4 Write unit tests for EntryService
+  - [x]* 8.4 Write unit tests for EntryService
     - Assert create/update payload shape (title prefix index set membership, one blind index per tag) with mocked API + real crypto
     - Assert decryption failure on a listed entry surfaces a per-entry error without throwing for the whole list
     - _Requirements: 6.3, 7.3, 8.1_
 
-  - [ ] 8.5 Implement SearchService
+  - [x] 8.5 Implement SearchService
     - Create `src/services/SearchService.ts`: `byTitle(query)` normalizes + computes blind index + calls `api/search.byTitle` + decrypts results; `byTags(tags)` computes one blind index per tag + calls `api/search.byTags` + decrypts results
     - _Requirements: 10.1, 10.2, 10.3, 11.1, 11.2_
 
-  - [ ]* 8.6 Write unit tests for SearchService
+  - [x]* 8.6 Write unit tests for SearchService
     - Assert query normalization + blind index computation before the API call; assert empty results produce an empty array (no throw)
     - _Requirements: 10.1, 10.5, 11.3_
 
-  - [ ] 8.7 Implement utils: entryText parsing and labeled-field detection
+  - [x] 8.7 Implement utils: entryText parsing and labeled-field detection
     - Create `src/utils/entryText.ts`: `parseEntryText(text)` (title = first line, body = rest), reverse `serializeEntryText`
     - `detectFields(body)`: label regex (clave/password/contraseña/usuario/user/ip/servidor/server/email/correo) and email-pattern detection, returning per-line copy candidates
     - _Requirements: 6.1, 8.4, 12.2_
 
-  - [ ]* 8.8 Write unit tests for entryText utils
+  - [x]* 8.8 Write unit tests for entryText utils
     - Test title/body split edge cases (empty body, blank title), and labeled-field/email detection against representative entry bodies
     - _Requirements: 6.1, 6.2, 8.4, 12.2_
 
-- [ ] 9. Checkpoint - Ensure services pass tests
+- [x] 9. Checkpoint - Ensure services pass tests
   - Ensure `npm test src/services src/utils` passes and `npx tsc --noEmit` is clean. Ask the user if questions arise.
 
 - [ ] 10. Implement Vault/Session store and autolock
