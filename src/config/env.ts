@@ -1,0 +1,72 @@
+import { z } from 'zod';
+
+/**
+ * Environment configuration schema. Values come from `EXPO_PUBLIC_*` vars,
+ * which Expo inlines at build time. Validated eagerly so a misconfigured
+ * environment fails fast with a descriptive error rather than failing
+ * mysteriously deep in the app (Requirements 14.1, 15.5).
+ */
+const envSchema = z.object({
+  EXPO_PUBLIC_API_BASE_URL: z
+    .string({ required_error: 'EXPO_PUBLIC_API_BASE_URL is required' })
+    .min(1, 'EXPO_PUBLIC_API_BASE_URL is required')
+    .url('EXPO_PUBLIC_API_BASE_URL must be a valid URL'),
+  EXPO_PUBLIC_LOCK_TIMEOUT_MS: z
+    .string({ required_error: 'EXPO_PUBLIC_LOCK_TIMEOUT_MS is required' })
+    .min(1, 'EXPO_PUBLIC_LOCK_TIMEOUT_MS is required')
+    .regex(/^\d+$/, 'EXPO_PUBLIC_LOCK_TIMEOUT_MS must be an integer number of milliseconds')
+    .transform(Number),
+  EXPO_PUBLIC_CLIPBOARD_CLEAR_MS: z
+    .string({ required_error: 'EXPO_PUBLIC_CLIPBOARD_CLEAR_MS is required' })
+    .min(1, 'EXPO_PUBLIC_CLIPBOARD_CLEAR_MS is required')
+    .regex(/^\d+$/, 'EXPO_PUBLIC_CLIPBOARD_CLEAR_MS must be an integer number of milliseconds')
+    .transform(Number),
+  EXPO_PUBLIC_ARGON2_PROFILE: z
+    .string({ required_error: 'EXPO_PUBLIC_ARGON2_PROFILE is required' })
+    .min(1, 'EXPO_PUBLIC_ARGON2_PROFILE is required'),
+});
+
+export interface Env {
+  apiBaseUrl: string;
+  lockTimeoutMs: number;
+  clipboardClearMs: number;
+  argon2Profile: string;
+}
+
+/**
+ * Validates a raw environment record and returns a typed `Env`. Exported
+ * (rather than only the singleton below) so it is independently unit
+ * testable without relying on `process.env` mutation.
+ */
+export function validateEnv(raw: Record<string, string | undefined>): Env {
+  const result = envSchema.safeParse(raw);
+  if (!result.success) {
+    const firstIssue = result.error.issues[0];
+    const field = firstIssue?.path?.join('.');
+    const detail = firstIssue?.message ?? 'invalid value';
+    const message = field ? `${field}: ${detail}` : detail;
+    throw new Error(`Invalid environment configuration: ${message}`);
+  }
+  const parsed = result.data;
+  return {
+    apiBaseUrl: parsed.EXPO_PUBLIC_API_BASE_URL,
+    lockTimeoutMs: parsed.EXPO_PUBLIC_LOCK_TIMEOUT_MS,
+    clipboardClearMs: parsed.EXPO_PUBLIC_CLIPBOARD_CLEAR_MS,
+    argon2Profile: parsed.EXPO_PUBLIC_ARGON2_PROFILE,
+  };
+}
+
+let cachedEnv: Env | undefined;
+
+/**
+ * Lazily validated singleton over `process.env`. Deferred (rather than
+ * validated at module load) so importing this module in a test file does
+ * not require a populated environment; the app's root layout calls
+ * `getEnv()` on startup so misconfiguration still fails fast for real runs.
+ */
+export function getEnv(): Env {
+  if (!cachedEnv) {
+    cachedEnv = validateEnv(process.env as Record<string, string | undefined>);
+  }
+  return cachedEnv;
+}
