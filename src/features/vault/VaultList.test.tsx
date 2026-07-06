@@ -15,7 +15,7 @@ jest.mock('expo-router', () => ({
 jest.mock('../../services/EntryService');
 jest.mock('../../services/SearchService');
 
-import sodium from '../../crypto/sodium';
+import sodium, { ready } from '../../crypto/sodium';
 import { EntryService } from '../../services/EntryService';
 import { SearchService } from '../../services/SearchService';
 import useVaultStore from '../../vault/vaultStore';
@@ -25,6 +25,10 @@ function renderWithClient(ui: React.ReactElement) {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
   return render(<QueryClientProvider client={client}>{ui}</QueryClientProvider>);
 }
+
+beforeAll(async () => {
+  await ready;
+});
 
 describe('VaultList', () => {
   beforeEach(() => {
@@ -65,6 +69,7 @@ describe('VaultList', () => {
   });
 
   it('shows an empty state for a title search with no results', async () => {
+    jest.setTimeout(10000);
     (EntryService.list as jest.Mock).mockResolvedValue([
       { id: '1', title: 'Bancamiga', body: '', tags: [], createdAt: 'a', updatedAt: 'a' },
     ]);

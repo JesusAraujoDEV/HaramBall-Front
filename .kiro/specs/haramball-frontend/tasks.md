@@ -245,33 +245,33 @@ Because `HaramBall-Back` is being implemented in parallel, exact endpoint paths,
 - [x] 14. Checkpoint - Ensure auth flow works end-to-end
   - Ensure register/login screens compile, tests pass, and the auth gate in `app/_layout.tsx` routes correctly on mock unlock/lock transitions. Ask the user if questions arise.
 
-- [ ] 15. Implement vault list, search, and entry screens
-  - [ ] 15.1 Implement SearchBar and chat-style vault list
+- [x] 15. Implement vault list, search, and entry screens
+  - [x] 15.1 Implement SearchBar and chat-style vault list
     - Create `src/ui/SearchBar.tsx` (debounced 250ms input) and `app/(vault)/index.tsx` + `src/features/vault/VaultList.tsx`: fetch + decrypt entries via TanStack Query on unlock, render via `EntryCard`, empty-state message for no results, clearing search returns to full list
     - _Requirements: 7.1, 7.3, 7.5, 10.1, 10.2, 10.4, 10.5, 10.6_
 
-  - [ ] 15.2 Implement EntryCard and tag filter UI
+  - [x] 15.2 Implement EntryCard and tag filter UI
     - Create `src/ui/EntryCard.tsx` (decrypted title, expand affordance, body copy button) and tag-filter selector calling `SearchService.byTags`; empty-state for no tag matches; clearing filter restores full list
     - _Requirements: 11.1, 11.2, 11.3, 11.4, 12.1, 12.3_
 
-  - [ ]* 15.3 Write component tests for search debounce and empty states
+  - [x]* 15.3 Write component tests for search debounce and empty states
     - Test debounce reduces call count on rapid typing; empty-state rendering for title and tag search; per-entry decrypt-error state doesn't crash the list
     - _Requirements: 7.3, 10.4, 10.5, 11.3_
 
-  - [ ] 15.4 Implement entry detail screen with FieldCopyRow
+  - [x] 15.4 Implement entry detail screen with FieldCopyRow
     - Create `app/(vault)/entry/[id].tsx` + `src/ui/FieldCopyRow.tsx`: decrypt + display title/body/tags/timestamps (localized), full-body copy action, per-line copy via `detectFields`, copy confirmation toast, clipboard auto-clear via `ClipboardAdapter.scheduleClear`
     - 404 handling: remove from cache + inform user
     - _Requirements: 7.2, 7.4, 7.5, 12.1, 12.2, 12.3, 12.4, 12.5_
 
-  - [ ] 15.5 Implement create/edit entry screens with TagInput
+  - [x] 15.5 Implement create/edit entry screens with TagInput
     - Create `app/(vault)/entry/new.tsx`, `app/(vault)/entry/[id]/edit.tsx`, `src/ui/TagInput.tsx`; free-form text editor (title = first line), blank-title validation, tag add/remove, 413 → "entry too large" message, optimistic vault update on success, 404-on-edit handling
     - _Requirements: 6.1, 6.2, 6.4, 6.5, 6.6, 8.1, 8.2, 8.3, 8.4, 9.1, 9.2, 9.3, 9.4_
 
-  - [ ]* 15.6 Write component tests for entry create/edit/delete
+  - [x]* 15.6 Write component tests for entry create/edit/delete
     - Test blank-title blocks submission, tag add/remove, delete confirmation dialog gating, 413/404 error message rendering
     - _Requirements: 6.2, 6.6, 8.3, 9.1, 9.4_
 
-- [ ] 16. Checkpoint - Ensure vault CRUD + search UI works end-to-end
+- [x] 16. Checkpoint - Ensure vault CRUD + search UI works end-to-end
   - Ensure all vault screens compile, tests pass, and manual create → search → edit → delete flow works against a running/mock backend. Ask the user if questions arise.
 
 - [ ] 17. Implement cross-cutting hygiene and error handling
