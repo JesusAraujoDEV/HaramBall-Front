@@ -40,75 +40,75 @@ Because `HaramBall-Back` is being implemented in parallel, exact endpoint paths,
 - [x] 2. Checkpoint - Ensure scaffold builds
   - Ensure `npx tsc --noEmit`, `npm test`, and `npx expo start --web` (or equivalent build check) succeed on the empty scaffold. Ask the user if questions arise.
 
-- [ ] 3. Implement crypto module (contract-critical, highest test priority)
-  - [ ] 3.1 Implement sodium init singleton
+- [x] 3. Implement crypto module (contract-critical, highest test priority)
+  - [x] 3.1 Implement sodium init singleton
     - Create `src/crypto/sodium.ts` exposing an awaited `ready` singleton over `libsodium-wrappers` (web) / `react-native-libsodium` (native) via platform file resolution
     - _Requirements: 5.1, 5.2_
 
-  - [ ] 3.2 Implement normalize module
+  - [x] 3.2 Implement normalize module
     - Create `src/crypto/normalize.ts`: `normalize(s)` = trim + lowercase + strip diacritics
     - _Requirements: 10.1, 10.3_
 
-  - [ ]* 3.3 Write property tests for normalization equivalence (Property 5)
+  - [x]* 3.3 Write property tests for normalization equivalence (Property 5)
     - **Property: Normalization Equivalence — inputs differing only by case, surrounding whitespace, or diacritics produce the same normalized value**
     - **Validates: Requirements 10.1, 10.3**
 
-  - [ ] 3.4 Implement KDF module
+  - [x] 3.4 Implement KDF module
     - Create `src/crypto/kdf.ts`: `deriveMasterKey(masterPassword, email)` using Argon2id with salt = `blake2b(normalize(email), len=16)`, pinned Argon2 opslimit/memlimit constants
     - `deriveSubkeys(masterKey)` using `crypto_kdf_derive_from_key` with domain-separated 8-byte contexts (`hb-enc__` subkey 1, `hb-idx__` subkey 2, `hb-auth_` subkey 3) returning `{ encryptionKey, indexKey, authHash }`
     - Centralize Argon2 params, contexts, `MIN_PREFIX`, `PAD_BUCKET`, envelope version as pinned constants in `src/crypto/constants.ts`
     - _Requirements: 5.1, 5.2, 1.1, 1.2, 2.1_
 
-  - [ ]* 3.5 Write unit + property tests for KDF (Property 7: key isolation)
+  - [x]* 3.5 Write unit + property tests for KDF (Property 7: key isolation)
     - **Property: Key Isolation — encryptionKey, indexKey, and authHash are pairwise distinct and domain-separated**
     - **Validates: Requirements 5.2, 1.2**
     - Known-answer vector test: same password + email always derive the same keys (determinism across runs)
     - _Requirements: 5.1, 5.2_
 
-  - [ ] 3.6 Implement cipher module
+  - [x] 3.6 Implement cipher module
     - Create `src/crypto/errors.ts` with typed `DecryptionError`
     - Create `src/crypto/cipher.ts`: `encrypt(plaintext, encKey)` using random 24-byte XChaCha20-Poly1305 nonce, envelope `v1.<base64(nonce||ct)>`; `decrypt(envelope, encKey)` parsing/validating the version prefix and throwing `DecryptionError` on auth failure or malformed envelope
     - _Requirements: 5.3, 5.4_
 
-  - [ ]* 3.7 Write property tests for cipher (Properties 1, 2, 3)
+  - [x]* 3.7 Write property tests for cipher (Properties 1, 2, 3)
     - **Property 1: Encryption round-trip — `decrypt(encrypt(m, k), k) === m` for any string and key**
     - **Property 2: Tamper-evidence — modifying any byte of an envelope causes `decrypt` to throw, never returns wrong plaintext**
     - **Property 3: Wrong-key safety — `decrypt(envelope, k2)` with `k2 ≠ k` always throws**
     - **Validates: Requirements 5.3, 5.4**
 
-  - [ ] 3.8 Implement blind index module
+  - [x] 3.8 Implement blind index module
     - Create `src/crypto/blindIndex.ts`: `blindIndex(value, indexKey)` = base64 keyed BLAKE2b (`crypto_generichash`, out=16) of `normalize(value)`
     - `buildTitlePrefixIndex(title, indexKey)`: tokenize normalized title, generate all prefixes `≥ MIN_PREFIX` per token, dedupe into a set, pad to a multiple of `PAD_BUCKET` with random 16-byte indexes
     - _Requirements: 10.1, 10.3, 11.1_
 
-  - [ ]* 3.9 Write property tests for blind index (Properties 4, 6)
+  - [x]* 3.9 Write property tests for blind index (Properties 4, 6)
     - **Property 4: Blind-index determinism — stable across runs/platforms for the same normalized value and key**
     - **Property 6: Prefix coverage — for title token `t` and any prefix `p` with `len(p) ≥ MIN_PREFIX`, `blindIndex(p, k)` is a member of `buildTitlePrefixIndex(title, k)`**
     - **Validates: Requirements 10.1, 10.2, 10.3, 11.1, 6.3, 8.1**
 
-  - [ ] 3.10 Write known-answer contract vectors
+  - [x] 3.10 Write known-answer contract vectors
     - Fix a test vector (fixed password/email/title/tag) and assert exact expected base64 outputs to lock the KDF/cipher/blind-index contract against accidental changes
     - _Requirements: 5.1, 5.2, 10.1_
 
-- [ ] 4. Checkpoint - Ensure crypto module passes all tests
+- [x] 4. Checkpoint - Ensure crypto module passes all tests
   - Ensure `npm test src/crypto` passes fully including property tests, and `npx tsc --noEmit` is clean. Ask the user if questions arise.
 
-- [ ] 5. Implement platform adapters
-  - [ ] 5.1 Implement SecureStoreAdapter (native/web)
+- [x] 5. Implement platform adapters
+  - [x] 5.1 Implement SecureStoreAdapter (native/web)
     - Create `src/platform/secureStore.native.ts` wrapping `expo-secure-store` (`save`/`read`/`remove`/`isAvailable`)
     - Create `src/platform/secureStore.web.ts` as a no-op/throwing implementation so no key material is ever persisted on web
     - _Requirements: 4.1, 4.4, 15.4_
 
-  - [ ] 5.2 Implement BiometricAdapter (native/web)
+  - [x] 5.2 Implement BiometricAdapter (native/web)
     - Create `src/platform/biometric.native.ts` wrapping `expo-local-authentication` (`isAvailable`/`authenticate`)
     - Create `src/platform/biometric.web.ts` returning `isAvailable() = false` always
     - _Requirements: 4.1, 4.2, 4.3_
 
-  - [ ] 5.3 Implement ClipboardAdapter
+  - [x] 5.3 Implement ClipboardAdapter
     - Create `src/platform/clipboard.ts` wrapping `expo-clipboard` `copy`, plus `scheduleClear(value, timeoutMs)` that re-checks clipboard contents before clearing (best-effort, platform-guarded)
     - _Requirements: 12.1, 12.4, 12.5_
 
-  - [ ]* 5.4 Write unit tests for platform adapters (Property 9)
+  - [x]* 5.4 Write unit tests for platform adapters (Property 9)
     - **Property 9: No secret at rest on Web — web SecureStoreAdapter never writes to localStorage/sessionStorage/IndexedDB/cookies**
     - **Validates: Requirements 4.4, 15.4**
     - Mock native modules; verify web adapters no-op/throw and native adapters delegate correctly
