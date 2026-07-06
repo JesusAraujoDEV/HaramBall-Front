@@ -24,7 +24,7 @@
     "expo-router": "~57.0.3",
     "expo-secure-store": "~57.0.0",
     "expo-status-bar": "~57.0.0",
-    "libsodium-wrappers": "^0.8.4",
+    "libsodium-wrappers-sumo": "^0.8.4",
     "nativewind": "^4.2.6",
     "react": "19.2.7",
     "react-dom": "19.2.7",
@@ -43,7 +43,7 @@
   "devDependencies": {
     "@testing-library/react-native": "^14.0.1",
     "@types/jest": "^30.0.0",
-    "@types/libsodium-wrappers": "^0.7.14",
+    "@types/libsodium-wrappers-sumo": "^0.7.8",
     "@types/react": "~19.2.2",
     "babel-preset-expo": "^57.0.1",
     "fast-check": "^4.8.0",

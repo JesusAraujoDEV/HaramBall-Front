@@ -6,24 +6,22 @@ import { z } from 'zod';
  * environment fails fast with a descriptive error rather than failing
  * mysteriously deep in the app (Requirements 14.1, 15.5).
  */
+const requiredString = (label: string) =>
+  z
+    .string({ error: `${label} is required` })
+    .min(1, `${label} is required`);
+
 const envSchema = z.object({
-  EXPO_PUBLIC_API_BASE_URL: z
-    .string({ required_error: 'EXPO_PUBLIC_API_BASE_URL is required' })
-    .min(1, 'EXPO_PUBLIC_API_BASE_URL is required')
-    .url('EXPO_PUBLIC_API_BASE_URL must be a valid URL'),
-  EXPO_PUBLIC_LOCK_TIMEOUT_MS: z
-    .string({ required_error: 'EXPO_PUBLIC_LOCK_TIMEOUT_MS is required' })
-    .min(1, 'EXPO_PUBLIC_LOCK_TIMEOUT_MS is required')
+  EXPO_PUBLIC_API_BASE_URL: requiredString('EXPO_PUBLIC_API_BASE_URL').pipe(
+    z.url('EXPO_PUBLIC_API_BASE_URL must be a valid URL'),
+  ),
+  EXPO_PUBLIC_LOCK_TIMEOUT_MS: requiredString('EXPO_PUBLIC_LOCK_TIMEOUT_MS')
     .regex(/^\d+$/, 'EXPO_PUBLIC_LOCK_TIMEOUT_MS must be an integer number of milliseconds')
     .transform(Number),
-  EXPO_PUBLIC_CLIPBOARD_CLEAR_MS: z
-    .string({ required_error: 'EXPO_PUBLIC_CLIPBOARD_CLEAR_MS is required' })
-    .min(1, 'EXPO_PUBLIC_CLIPBOARD_CLEAR_MS is required')
+  EXPO_PUBLIC_CLIPBOARD_CLEAR_MS: requiredString('EXPO_PUBLIC_CLIPBOARD_CLEAR_MS')
     .regex(/^\d+$/, 'EXPO_PUBLIC_CLIPBOARD_CLEAR_MS must be an integer number of milliseconds')
     .transform(Number),
-  EXPO_PUBLIC_ARGON2_PROFILE: z
-    .string({ required_error: 'EXPO_PUBLIC_ARGON2_PROFILE is required' })
-    .min(1, 'EXPO_PUBLIC_ARGON2_PROFILE is required'),
+  EXPO_PUBLIC_ARGON2_PROFILE: requiredString('EXPO_PUBLIC_ARGON2_PROFILE'),
 });
 
 export interface Env {

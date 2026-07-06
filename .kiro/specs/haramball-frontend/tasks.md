@@ -10,34 +10,34 @@ Because `HaramBall-Back` is being implemented in parallel, exact endpoint paths,
 
 ## Tasks
 
-- [ ] 1. Scaffold Expo project, tooling, and configuration
-  - [ ] 1.1 Initialize Expo + Expo Router project with TypeScript
+- [x] 1. Scaffold Expo project, tooling, and configuration
+  - [x] 1.1 Initialize Expo + Expo Router project with TypeScript
     - Create the app with the Expo TypeScript template and Expo Router enabled (`app/` directory, `app.json`, `babel.config.js`, `tsconfig.json` with strict mode)
     - Add `package.json` scripts for `start`, `android`, `ios`, `web`, `test`, `typecheck`, `lint`
     - Create `.gitignore` listing `.env`, `node_modules`, build output
     - _Requirements: 13.1, 13.2_
 
-  - [ ] 1.2 Install core dependencies from the Technology Stack table
+  - [x] 1.2 Install core dependencies from the Technology Stack table
     - Add `libsodium-wrappers` (+ `@types/libsodium-wrappers`) for web and `react-native-libsodium` for native, `expo-secure-store`, `expo-local-authentication`, `expo-clipboard`, `@tanstack/react-query`, `zustand`, `nativewind` (+ `tailwindcss`), `react-native-reanimated`, `zod`
     - Add dev dependencies: `jest`, `jest-expo`, `@testing-library/react-native`, `@types/jest`, `fast-check` (for property tests)
     - _Requirements: 13.1_
 
-  - [ ] 1.3 Configure NativeWind, Reanimated, and Jest
+  - [x] 1.3 Configure NativeWind, Reanimated, and Jest
     - Wire `tailwind.config.js`, `nativewind` babel/metro config, Reanimated babel plugin
     - Configure `jest.config.js` (preset `jest-expo`) and a `jest.setup.ts` for RNTL matchers
     - _Requirements: 13.1, 13.2_
 
-  - [ ] 1.4 Implement environment config module
+  - [x] 1.4 Implement environment config module
     - Create `src/config/env.ts` reading `EXPO_PUBLIC_*` vars, validated with Zod at startup; missing required vars fail fast with a descriptive error
     - Create `.env.example` documenting `EXPO_PUBLIC_API_BASE_URL`, lock timeout, clipboard clear timeout, Argon2 profile
     - _Requirements: 14.1, 15.5_
 
-  - [ ]* 1.5 Write unit tests for env validation
+  - [x]* 1.5 Write unit tests for env validation
     - Test that missing required variables throw a descriptive startup error
     - Test that a fully-populated environment validates successfully
     - _Requirements: 14.1_
 
-- [ ] 2. Checkpoint - Ensure scaffold builds
+- [x] 2. Checkpoint - Ensure scaffold builds
   - Ensure `npx tsc --noEmit`, `npm test`, and `npx expo start --web` (or equivalent build check) succeed on the empty scaffold. Ask the user if questions arise.
 
 - [ ] 3. Implement crypto module (contract-critical, highest test priority)
