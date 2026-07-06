@@ -114,36 +114,36 @@ Because `HaramBall-Back` is being implemented in parallel, exact endpoint paths,
     - Mock native modules; verify web adapters no-op/throw and native adapters delegate correctly
     - _Requirements: 4.1, 4.2, 4.4_
 
-- [ ] 6. Implement API client
-  - [ ] 6.1 Confirm API contract against HaramBall-Back
+- [x] 6. Implement API client
+  - [x] 6.1 Confirm API contract against HaramBall-Back
     - Inspect `HaramBall-Back/src` (auth/entries/search controllers, DTOs, Prisma schema field names) for actual routes, field names (`titleCiphertext`/`bodyCiphertext`/`tagsCiphertext` per Prisma schema), status codes, and the `api/v1` global prefix
     - Update `src/api/schemas.ts` and endpoint paths to match reality; record any still-unconfirmed items as inline `// TODO(confirm-backend)` comments
     - _Requirements: 14.1_
 
-  - [ ] 6.2 Implement typed fetch wrapper and error envelope mapping
+  - [x] 6.2 Implement typed fetch wrapper and error envelope mapping
     - Create `src/api/client.ts`: `request<T>({ method, path, body, auth, schema })` attaching `Authorization: Bearer <accessToken>` when `auth: true`, parsing JSON, validating with an optional Zod schema, mapping HTTP status + backend error envelope (`{ code, message }`) to a typed `ApiError(code, message, status)`
     - Base URL from `src/config/env.ts`, prefixed with `/api/v1`
     - _Requirements: 14.1, 14.2, 14.3, 14.4, 14.5_
 
-  - [ ] 6.3 Implement 401 refresh/retry-once interceptor
+  - [x] 6.3 Implement 401 refresh/retry-once interceptor
     - On 401 with a refresh token available, call refresh endpoint once (single-flight guard so concurrent 401s share one in-flight refresh), store the new access token, retry the original request exactly once
     - On refresh failure/no refresh token: clear session, lock vault, propagate a distinguishable error for routing to `/login`
     - _Requirements: 3.1, 3.2_
 
-  - [ ] 6.4 Implement auth/entries/search API modules and Zod schemas
+  - [x] 6.4 Implement auth/entries/search API modules and Zod schemas
     - Create `src/api/auth.ts` (`register`, `login`, `refresh`, `logout`), `src/api/entries.ts` (`list`, `get`, `create`, `update`, `remove`), `src/api/search.ts` (`byTitle`, `byTags`)
     - Create `src/api/schemas.ts` with Zod schemas for `EntryResponse`, `AuthTokens`, error envelope
     - _Requirements: 1.1, 1.2, 2.1, 6.3, 6.4, 7.1, 8.1, 9.2, 10.1, 11.1_
 
-  - [ ]* 6.5 Write API client unit tests
+  - [x]* 6.5 Write API client unit tests
     - Test 401 → refresh → retry-once; concurrent 401s trigger a single refresh (single-flight); error envelope mapping to `ApiError`; base URL/prefix composition
     - _Requirements: 3.1, 3.2, 14.2, 14.3, 14.4_
 
-  - [ ]* 6.6 Write property test for no-secret-egress (Property 8)
+  - [x]* 6.6 Write property test for no-secret-egress (Property 8)
     - **Property 8: No secret egress — no request body or query built by the API modules contains the Master_Password, Master_Key, Encryption_Key, Index_Key, or plaintext title/body/tag**
     - **Validates: Requirements 1.3, 2.1, 5.3**
 
-- [ ] 7. Checkpoint - Ensure API client passes tests
+- [x] 7. Checkpoint - Ensure API client passes tests
   - Ensure `npm test src/api` passes and `npx tsc --noEmit` is clean. Ask the user if questions arise.
 
 - [ ] 8. Implement domain services

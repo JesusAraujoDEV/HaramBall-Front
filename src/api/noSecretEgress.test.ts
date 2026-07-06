@@ -76,11 +76,20 @@ describe('Property 8: no secret egress', () => {
   });
 
   it('entry create/update payloads never contain plaintext title/body/tags', async () => {
+    // Use a restricted alphanumeric alphabet with a minimum length so
+    // coincidental substring collisions with base64 ciphertext/blind-index
+    // noise (e.g. a lone "+" or single letter) can't produce false
+    // positives; the property is about substantive plaintext leaking, not
+    // single-character overlaps that are statistically inevitable in any
+    // sufficiently long base64 string.
+    const meaningfulString = (minLength: number, maxLength: number) =>
+      fc.string({ minLength, maxLength, unit: fc.constantFrom(...'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'.split('')) });
+
     await fc.assert(
       fc.asyncProperty(
-        fc.string({ minLength: 1, maxLength: 40 }),
-        fc.string({ minLength: 0, maxLength: 200 }),
-        fc.array(fc.string({ minLength: 1, maxLength: 20 }), { maxLength: 5 }),
+        meaningfulString(6, 40),
+        meaningfulString(6, 200),
+        fc.array(meaningfulString(6, 20), { maxLength: 5 }),
         async (title, body, tags) => {
           const encKey = sodium.randombytes_buf(32);
           const indexKey = sodium.randombytes_buf(32);
@@ -110,8 +119,8 @@ describe('Property 8: no secret egress', () => {
           await entriesApi.update('e1', payload);
 
           for (const sentBody of bodies) {
-            if (title.length > 0) expect(sentBody).not.toContain(title);
-            if (body.length > 0) expect(sentBody).not.toContain(body);
+            expect(sentBody).not.toContain(title);
+            expect(sentBody).not.toContain(body);
             for (const tag of tags) {
               expect(sentBody).not.toContain(tag);
             }
@@ -125,10 +134,13 @@ describe('Property 8: no secret egress', () => {
   });
 
   it('search requests carry only the blind index of the query/tag, never the plaintext', async () => {
+    const meaningfulString = (minLength: number, maxLength: number) =>
+      fc.string({ minLength, maxLength, unit: fc.constantFrom(...'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'.split('')) });
+
     await fc.assert(
       fc.asyncProperty(
-        fc.string({ minLength: 1, maxLength: 30 }),
-        fc.array(fc.string({ minLength: 1, maxLength: 20 }), { minLength: 1, maxLength: 5 }),
+        meaningfulString(6, 30),
+        fc.array(meaningfulString(6, 20), { minLength: 1, maxLength: 5 }),
         async (query, tags) => {
           const indexKey = sodium.randombytes_buf(32);
           const queryIndex = blindIndex(query, indexKey);
