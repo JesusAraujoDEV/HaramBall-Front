@@ -274,24 +274,24 @@ Because `HaramBall-Back` is being implemented in parallel, exact endpoint paths,
 - [x] 16. Checkpoint - Ensure vault CRUD + search UI works end-to-end
   - Ensure all vault screens compile, tests pass, and manual create → search → edit → delete flow works against a running/mock backend. Ask the user if questions arise.
 
-- [ ] 17. Implement cross-cutting hygiene and error handling
-  - [ ] 17.1 Implement log scrubbing
+- [x] 17. Implement cross-cutting hygiene and error handling
+  - [x] 17.1 Implement log scrubbing
     - Central logging helper excluding ciphertext, Master_Password, derived keys, and blind-index inputs from any `console.*`/crash-report output
     - _Requirements: 5.6, 15.1_
 
-  - [ ]* 17.2 Write property test for no-secret-in-logs (Property 10)
+  - [x]* 17.2 Write property test for no-secret-in-logs (Property 10)
     - **Property 10: No secret in logs — log/crash output excludes secrets, ciphertext, and blind-index inputs**
     - **Validates: Requirements 5.6, 15.1**
 
-  - [ ] 17.3 Implement app-switcher privacy overlay (native)
+  - [x] 17.3 Implement app-switcher privacy overlay (native)
     - Extend `LockOverlay`/root layout to render the blur/cover on `inactive`/`background` `AppState` before the OS takes its preview snapshot
     - _Requirements: 15.3_
 
-  - [ ] 17.4 Wire global error → user-message mapping
+  - [x] 17.4 Wire global error → user-message mapping
     - Central mapping from `ApiError`/`DecryptionError`/network errors to the Error Handling table in the design (401 refresh/retry, 409, 413, 429 + `Retry-After`, 404, 500/network, 400 field errors)
     - _Requirements: 14.2, 14.3, 14.4, 14.5_
 
-  - [ ]* 17.5 Write property test for ownership scoping (Property 13)
+  - [x]* 17.5 Write property test for ownership scoping (Property 13)
     - **Property 13: Ownership scoping — the UI only renders entries returned by the backend for the authenticated account; no client-side cross-account state**
     - **Validates: Requirements 7.1, 10.2, 11.2**
 

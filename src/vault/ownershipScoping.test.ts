@@ -37,11 +37,14 @@ describe('Vault store ownership scoping (Property 13)', () => {
   it('setEntries() always replaces the cache rather than merging with prior entries', () => {
     fc.assert(
       fc.property(
-        fc.array(fc.string({ minLength: 1, maxLength: 8 }).filter((s) => /^[a-zA-Z0-9]+$/.test(s)), {
+        // Prefix every generated id so it can never collide with an
+        // inherited `Object.prototype` property name (e.g. "valueOf",
+        // "constructor", "toString") when used as a plain-object key.
+        fc.array(fc.string({ minLength: 1, maxLength: 8 }).map((s) => `id-${s}`), {
           minLength: 0,
           maxLength: 5,
         }),
-        fc.array(fc.string({ minLength: 1, maxLength: 8 }).filter((s) => /^[a-zA-Z0-9]+$/.test(s)), {
+        fc.array(fc.string({ minLength: 1, maxLength: 8 }).map((s) => `id-${s}`), {
           minLength: 0,
           maxLength: 5,
         }),
