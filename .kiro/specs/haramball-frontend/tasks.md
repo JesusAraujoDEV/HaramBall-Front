@@ -185,31 +185,31 @@ Because `HaramBall-Back` is being implemented in parallel, exact endpoint paths,
 - [x] 9. Checkpoint - Ensure services pass tests
   - Ensure `npm test src/services src/utils` passes and `npx tsc --noEmit` is clean. Ask the user if questions arise.
 
-- [ ] 10. Implement Vault/Session store and autolock
-  - [ ] 10.1 Implement Zustand vault store
+- [x] 10. Implement Vault/Session store and autolock
+  - [x] 10.1 Implement Zustand vault store
     - Create `src/vault/vaultStore.ts` with `VaultState` shape from the design: `status`, `keys`, `entries`, `tokens`, and actions `unlockWithPassword`, `unlockWithBiometrics`, `lock`, `logout`
     - `lock()` zeroes key buffers (overwrite `Uint8Array` contents) and clears the decrypted entry cache
     - `unlockWithPassword` orchestrates `AuthService.login` + optional biometric opt-in persistence via `SecureStoreAdapter`
     - _Requirements: 2.2, 3.5, 4.1, 4.5, 4.6, 5.5_
 
-  - [ ]* 10.2 Write unit tests for vault store (Property 11: lock clears secrets)
+  - [x]* 10.2 Write unit tests for vault store (Property 11: lock clears secrets)
     - **Property 11: Lock clears secrets — after `lock()`, `keys === null` and the decrypted entry cache is empty**
     - **Validates: Requirements 5.5, 4.5, 15.2**
     - _Requirements: 5.5, 4.5_
 
-  - [ ] 10.3 Implement biometric unlock flow
+  - [x] 10.3 Implement biometric unlock flow
     - `unlockWithBiometrics()`: `BiometricAdapter.authenticate()` → on success read `masterKey`/`refreshToken` from `SecureStoreAdapter` → `deriveSubkeys` → `api/auth.refresh` → set store to `unlocked`; on failure/cancel remain `locked` and allow master-password fallback
     - _Requirements: 4.2, 4.3_
 
-  - [ ] 10.4 Implement autolock
+  - [x] 10.4 Implement autolock
     - Create `src/vault/autolock.ts`: `AppState` listener (native) / `visibilitychange` listener (web) starting a configurable timeout on background/inactive; on timeout calls `vaultStore.lock()`
     - _Requirements: 4.5_
 
-  - [ ]* 10.5 Write unit tests for autolock timer
+  - [x]* 10.5 Write unit tests for autolock timer
     - Test that backgrounding beyond the configured timeout triggers `lock()`, and that returning before timeout does not
     - _Requirements: 4.5_
 
-- [ ] 11. Checkpoint - Ensure vault store passes tests
+- [x] 11. Checkpoint - Ensure vault store passes tests
   - Ensure `npm test src/vault` passes and `npx tsc --noEmit` is clean. Ask the user if questions arise.
 
 - [ ] 12. Implement root app shell and navigation
