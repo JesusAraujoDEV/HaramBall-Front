@@ -7,42 +7,11 @@ import secureStoreAdapter from '../platform/secureStore';
 import biometricAdapter from '../platform/biometric';
 import * as authApi from '../api/auth';
 import { tokenStore, setSessionExpiredHandler } from '../api/tokenStore';
-import { getEnv } from '../config/env';
 import { getOfflineStore } from '../offline/localDb';
 
 const SECURE_STORE_MASTER_KEY = 'hb.masterKey';
 const SECURE_STORE_REFRESH_TOKEN = 'hb.refreshToken';
 const SECURE_STORE_EMAIL = 'hb.email';
-const SECURE_STORE_LAST_VERIFIED_AT = 'hb.lastVerifiedAt';
-
-/**
- * Records a successful strong verification (master password, biometrics, or
- * passkey). Within `sessionTtlMs` (default 24 h) of this moment the user is
- * not re-prompted; past it, re-verification is mandatory.
- */
-async function markVerifiedNow(): Promise<void> {
-  try {
-    if (secureStoreAdapter.isAvailable()) {
-      await secureStoreAdapter.save(SECURE_STORE_LAST_VERIFIED_AT, String(Date.now()));
-    }
-  } catch {
-    // Best-effort: absence just means the next unlock prompts again.
-  }
-}
-
-/** True while the last strong verification is younger than the session TTL. */
-async function isWithinVerificationWindow(): Promise<boolean> {
-  try {
-    if (!secureStoreAdapter.isAvailable()) return false;
-    const raw = await secureStoreAdapter.read(SECURE_STORE_LAST_VERIFIED_AT);
-    if (!raw) return false;
-    const verifiedAt = Number(raw);
-    if (!Number.isFinite(verifiedAt)) return false;
-    return Date.now() - verifiedAt < getEnv().sessionTtlMs;
-  } catch {
-    return false;
-  }
-}
 
 export type VaultStatus = 'locked' | 'unlocking' | 'unlocked';
 
@@ -101,10 +70,6 @@ export const useVaultStore = create<VaultState>((set, get) => ({
         }
       }
 
-      // A master-password login is itself a strong verification: it opens
-      // the 24 h window during which biometrics won't re-prompt.
-      await markVerifiedNow();
-
       zero(masterKey);
     } catch (err) {
       set({ status: 'locked', error: err instanceof Error ? err.message : 'Login failed' });
@@ -117,35 +82,33 @@ export const useVaultStore = create<VaultState>((set, get) => ({
       return false;
     }
 
-    // Once-per-day rule: inside the 24 h verification window the session is
-    // restored silently; past it, the biometric prompt is mandatory again.
-    const withinWindow = await isWithinVerificationWindow();
-    if (!withinWindow) {
-      const available = await biometricAdapter.isAvailable();
-      if (!available) {
-        return false;
-      }
+    // A stored session (master key + refresh token) is required — it is set
+    // on the first master-password login. Read it BEFORE prompting so a fresh
+    // install never shows a pointless fingerprint prompt with nothing to
+    // restore.
+    const [masterKeyB64, refreshToken] = await Promise.all([
+      secureStoreAdapter.read(SECURE_STORE_MASTER_KEY),
+      secureStoreAdapter.read(SECURE_STORE_REFRESH_TOKEN),
+    ]);
+    if (!masterKeyB64 || !refreshToken) {
+      return false;
+    }
 
-      const authenticated = await biometricAdapter.authenticate('Unlock HaramBall');
-      if (!authenticated) {
-        return false;
-      }
-
-      await markVerifiedNow();
+    // Every biometric unlock requires a fresh fingerprint/face confirmation
+    // ("confirm it's me each time"). The fingerprint alone is sufficient to
+    // restore the session and refresh the token — the master password is not
+    // asked again until logout or refresh-token expiry.
+    const available = await biometricAdapter.isAvailable();
+    if (!available) {
+      return false;
+    }
+    const authenticated = await biometricAdapter.authenticate('Unlock HaramBall');
+    if (!authenticated) {
+      return false;
     }
 
     set({ status: 'unlocking', error: null });
     try {
-      const [masterKeyB64, refreshToken] = await Promise.all([
-        secureStoreAdapter.read(SECURE_STORE_MASTER_KEY),
-        secureStoreAdapter.read(SECURE_STORE_REFRESH_TOKEN),
-      ]);
-
-      if (!masterKeyB64 || !refreshToken) {
-        set({ status: 'locked' });
-        return false;
-      }
-
       const masterKey = sodium.from_base64(masterKeyB64, sodium.base64_variants.ORIGINAL);
       const { encryptionKey, indexKey } = deriveSubkeys(masterKey);
 
@@ -178,7 +141,6 @@ export const useVaultStore = create<VaultState>((set, get) => ({
       await secureStoreAdapter.remove(SECURE_STORE_MASTER_KEY);
       await secureStoreAdapter.remove(SECURE_STORE_REFRESH_TOKEN);
       await secureStoreAdapter.remove(SECURE_STORE_EMAIL);
-      await secureStoreAdapter.remove(SECURE_STORE_LAST_VERIFIED_AT);
     } catch {
       // Best-effort cleanup.
     }

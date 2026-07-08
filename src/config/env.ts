@@ -22,13 +22,6 @@ const envSchema = z.object({
     .regex(/^\d+$/, 'EXPO_PUBLIC_CLIPBOARD_CLEAR_MS must be an integer number of milliseconds')
     .transform(Number),
   EXPO_PUBLIC_ARGON2_PROFILE: requiredString('EXPO_PUBLIC_ARGON2_PROFILE'),
-  // Optional: how long a biometric/passkey verification stays valid before
-  // the user must re-verify. Defaults to 24 hours (the "once per day" rule).
-  EXPO_PUBLIC_SESSION_TTL_MS: z
-    .string()
-    .regex(/^\d+$/, 'EXPO_PUBLIC_SESSION_TTL_MS must be an integer number of milliseconds')
-    .transform(Number)
-    .optional(),
 });
 
 export interface Env {
@@ -36,11 +29,7 @@ export interface Env {
   lockTimeoutMs: number;
   clipboardClearMs: number;
   argon2Profile: string;
-  /** Re-verification window for biometrics/passkeys (default 24 h). */
-  sessionTtlMs: number;
 }
-
-const DEFAULT_SESSION_TTL_MS = 24 * 60 * 60 * 1000;
 
 /**
  * Validates a raw environment record and returns a typed `Env`. Exported
@@ -62,7 +51,6 @@ export function validateEnv(raw: Record<string, string | undefined>): Env {
     lockTimeoutMs: parsed.EXPO_PUBLIC_LOCK_TIMEOUT_MS,
     clipboardClearMs: parsed.EXPO_PUBLIC_CLIPBOARD_CLEAR_MS,
     argon2Profile: parsed.EXPO_PUBLIC_ARGON2_PROFILE,
-    sessionTtlMs: parsed.EXPO_PUBLIC_SESSION_TTL_MS ?? DEFAULT_SESSION_TTL_MS,
   };
 }
 
@@ -80,7 +68,6 @@ function getRawEnv(): Record<string, string | undefined> {
     EXPO_PUBLIC_LOCK_TIMEOUT_MS: process.env.EXPO_PUBLIC_LOCK_TIMEOUT_MS,
     EXPO_PUBLIC_CLIPBOARD_CLEAR_MS: process.env.EXPO_PUBLIC_CLIPBOARD_CLEAR_MS,
     EXPO_PUBLIC_ARGON2_PROFILE: process.env.EXPO_PUBLIC_ARGON2_PROFILE,
-    EXPO_PUBLIC_SESSION_TTL_MS: process.env.EXPO_PUBLIC_SESSION_TTL_MS,
   };
 }
 

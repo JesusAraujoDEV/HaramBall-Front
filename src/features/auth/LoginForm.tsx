@@ -3,6 +3,7 @@ import { View, Text, TextInput, Pressable, ActivityIndicator } from 'react-nativ
 import { useRouter } from 'expo-router';
 import { useColorScheme } from 'nativewind';
 import useVaultStore from '../../vault/vaultStore';
+import biometricAdapter from '../../platform/biometric';
 import { ApiError } from '../../api/errors';
 import { getRetryAfterSeconds, toUserMessage } from '../../utils/errorMessages';
 import { loginSchema } from './schemas';
@@ -16,6 +17,8 @@ export function LoginForm(): React.ReactElement {
   const router = useRouter();
   const { colorScheme } = useColorScheme();
   const unlockWithPassword = useVaultStore((s) => s.unlockWithPassword);
+  const unlockWithBiometrics = useVaultStore((s) => s.unlockWithBiometrics);
+  const [biometricAvailable, setBiometricAvailable] = useState(false);
 
   const [email, setEmail] = useState('');
   const [masterPassword, setMasterPassword] = useState('');
@@ -38,6 +41,38 @@ export function LoginForm(): React.ReactElement {
     const timer = setTimeout(() => setRetryAfter((s) => (s !== null ? s - 1 : null)), 1000);
     return () => clearTimeout(timer);
   }, [retryAfter]);
+
+  // Show the fingerprint button only where biometrics are actually available
+  // (native device with an enrolled fingerprint/face).
+  useEffect(() => {
+    let cancelled = false;
+    void biometricAdapter.isAvailable().then((ok) => {
+      if (!cancelled) setBiometricAvailable(ok);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  async function handleBiometric(): Promise<void> {
+    if (submittingRef.current) return;
+    submittingRef.current = true;
+    setSubmitting(true);
+    setFormError(null);
+    try {
+      const unlocked = await unlockWithBiometrics();
+      if (unlocked) {
+        router.replace('/');
+      } else {
+        setFormError('Log in with your master password once first, then fingerprint will work.');
+      }
+    } catch (err) {
+      setFormError(toUserMessage(err));
+    } finally {
+      submittingRef.current = false;
+      setSubmitting(false);
+    }
+  }
 
   async function handleSubmit(): Promise<void> {
     if (submittingRef.current) return; // guard against duplicate submissions (Requirement 2.6)
@@ -176,6 +211,20 @@ export function LoginForm(): React.ReactElement {
           <Text className="text-base font-semibold text-white dark:text-zinc-900">Log in</Text>
         )}
       </Pressable>
+
+      {biometricAvailable ? (
+        <Pressable
+          onPress={handleBiometric}
+          disabled={submitting}
+          className="h-12 flex-row items-center justify-center gap-2 rounded-xl border border-zinc-300 disabled:opacity-60 dark:border-zinc-700"
+          testID="login-biometric"
+          accessibilityRole="button"
+          accessibilityLabel="Log in with fingerprint"
+        >
+          <Text className="text-lg">👆</Text>
+          <Text className="text-base font-semibold text-zinc-900 dark:text-zinc-50">Log in with fingerprint</Text>
+        </Pressable>
+      ) : null}
 
       <Pressable onPress={() => router.replace('/register')} className="py-1">
         <Text className="text-center text-sm text-zinc-500 dark:text-zinc-400">
