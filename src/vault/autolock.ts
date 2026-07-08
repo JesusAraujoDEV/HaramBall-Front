@@ -1,64 +1,17 @@
-import { AppState, Platform, type AppStateStatus } from 'react-native';
-import { getEnv } from '../config/env';
-import useVaultStore from './vaultStore';
-
 /**
- * Starts a configurable-timeout auto-lock: on native, an `AppState` listener
- * starts the timer when the app backgrounds/is inactive; on web, the
- * `visibilitychange` event does the equivalent. Returns an unsubscribe
- * function (Requirement 4.5).
+ * Auto-lock on background is intentionally DISABLED.
+ *
+ * Product decision: switching tabs or apps (getting distracted) must never
+ * kick the user back to login. The vault now locks only on an explicit action
+ * — the "Lock" button or logout — and, on native, whenever the app process is
+ * fully closed and reopened (the fingerprint prompt guards that first open).
+ *
+ * Privacy while backgrounded is still handled by `LockOverlay`, which covers
+ * the screen in the app switcher WITHOUT ending the session.
+ *
+ * Kept as a no-op (rather than removed) so the root layout wiring and its
+ * unsubscribe contract stay unchanged.
  */
-export function startAutolock(timeoutMs: number = getEnv().lockTimeoutMs): () => void {
-  let timer: ReturnType<typeof setTimeout> | null = null;
-
-  const scheduleLock = () => {
-    if (timer) clearTimeout(timer);
-    timer = setTimeout(() => {
-      useVaultStore.getState().lock();
-    }, timeoutMs);
-  };
-
-  const cancelLock = () => {
-    if (timer) {
-      clearTimeout(timer);
-      timer = null;
-    }
-  };
-
-  if (Platform.OS === 'web') {
-    const handleVisibility = () => {
-      if (typeof document === 'undefined') return;
-      if (document.visibilityState === 'hidden') {
-        scheduleLock();
-      } else {
-        cancelLock();
-      }
-    };
-
-    if (typeof document !== 'undefined') {
-      document.addEventListener('visibilitychange', handleVisibility);
-    }
-
-    return () => {
-      cancelLock();
-      if (typeof document !== 'undefined') {
-        document.removeEventListener('visibilitychange', handleVisibility);
-      }
-    };
-  }
-
-  const handleAppStateChange = (state: AppStateStatus) => {
-    if (state === 'background' || state === 'inactive') {
-      scheduleLock();
-    } else if (state === 'active') {
-      cancelLock();
-    }
-  };
-
-  const subscription = AppState.addEventListener('change', handleAppStateChange);
-
-  return () => {
-    cancelLock();
-    subscription.remove();
-  };
+export function startAutolock(): () => void {
+  return () => {};
 }
