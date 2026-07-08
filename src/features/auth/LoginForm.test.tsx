@@ -67,7 +67,11 @@ describe('LoginForm', () => {
     await fireEvent.changeText(getByTestId('login-password'), 'password123456');
     await fireEvent.press(getByTestId('login-submit'));
 
-    await waitFor(() => expect(unlockSpy).toHaveBeenCalledWith('user@example.com', 'password123456'));
+    await waitFor(() =>
+      expect(unlockSpy).toHaveBeenCalledWith('user@example.com', 'password123456', {
+        enableBiometrics: true,
+      }),
+    );
     await waitFor(() => expect(mockReplace).toHaveBeenCalledWith('/'));
   });
 

@@ -16,7 +16,8 @@
         {
           "faceIDPermission": "Allow HaramBall to use Face ID to unlock your vault."
         }
-      ]
+      ],
+      "expo-sqlite"
     ],
     "ios": {
       "supportsTablet": true,

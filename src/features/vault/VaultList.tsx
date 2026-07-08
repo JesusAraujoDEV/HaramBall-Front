@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { ActivityIndicator, FlatList, Pressable, Text, View } from 'react-native';
+import { ActivityIndicator, FlatList, Platform, Pressable, Text, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useQuery } from '@tanstack/react-query';
 import useVaultStore from '../../vault/vaultStore';
@@ -8,8 +8,53 @@ import { SearchService } from '../../services/SearchService';
 import { SearchBar } from '../../ui/SearchBar';
 import { EntryCard } from '../../ui/EntryCard';
 import { ThemeToggle } from '../../ui/ThemeToggle';
+import webauthnAdapter from '../../platform/webauthn';
 import { toUserMessage } from '../../utils/errorMessages';
 import type { PlainEntry } from '../../services/types';
+
+interface Props {
+  /** Overrides tap navigation (desktop split view selects in place). */
+  onSelectEntry?: (entry: PlainEntry) => void;
+}
+
+/**
+ * Web-only "add passkey" pill: registers a platform passkey (Touch ID /
+ * Windows Hello) used for the daily re-verification gate.
+ */
+function PasskeyButton(): React.ReactElement | null {
+  const [state, setState] = useState<'idle' | 'busy' | 'done' | 'error'>('idle');
+
+  if (Platform.OS !== 'web' || !webauthnAdapter.isSupported()) {
+    return null;
+  }
+
+  async function handlePress(): Promise<void> {
+    setState('busy');
+    try {
+      const ok = await webauthnAdapter.registerPasskey();
+      setState(ok ? 'done' : 'error');
+    } catch {
+      setState('error');
+    }
+    setTimeout(() => setState('idle'), 2500);
+  }
+
+  const label =
+    state === 'busy' ? 'Waiting…' : state === 'done' ? 'Passkey added' : state === 'error' ? 'Failed' : 'Passkey';
+
+  return (
+    <Pressable
+      onPress={handlePress}
+      disabled={state === 'busy'}
+      className="rounded-full border border-zinc-200 bg-zinc-50 px-3 py-1.5 active:opacity-70 dark:border-zinc-800 dark:bg-zinc-900"
+      testID="vault-passkey"
+      accessibilityRole="button"
+      accessibilityLabel="Register a passkey"
+    >
+      <Text className="text-xs font-medium text-zinc-700 dark:text-zinc-300">{label}</Text>
+    </Pressable>
+  );
+}
 
 /**
  * Vault home: fetches + decrypts entries via TanStack Query on unlock,
@@ -17,7 +62,7 @@ import type { PlainEntry } from '../../services/types';
  * states rather than errors for no-match cases (Requirements 7.1, 7.3, 7.5,
  * 10.1, 10.2, 10.4, 10.5, 10.6, 11.1-11.4).
  */
-export function VaultList(): React.ReactElement {
+export function VaultList({ onSelectEntry }: Props = {}): React.ReactElement {
   const router = useRouter();
   const keys = useVaultStore((s) => s.keys);
   const lock = useVaultStore((s) => s.lock);
@@ -57,6 +102,10 @@ export function VaultList(): React.ReactElement {
   }, [listQuery.data]);
 
   function handleOpenEntry(entry: PlainEntry): void {
+    if (onSelectEntry) {
+      onSelectEntry(entry);
+      return;
+    }
     router.push(`/entry/${entry.id}`);
   }
 
@@ -73,6 +122,7 @@ export function VaultList(): React.ReactElement {
       <View className="flex-row items-center justify-between px-4 pb-2 pt-14">
         <Text className="text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50">Vault</Text>
         <View className="flex-row items-center gap-2">
+          <PasskeyButton />
           <ThemeToggle />
           <Pressable
             onPress={lock}

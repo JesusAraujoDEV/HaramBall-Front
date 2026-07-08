@@ -9,6 +9,7 @@ import { getEnv } from '../src/config/env';
 import useVaultStore from '../src/vault/vaultStore';
 import useThemeStore from '../src/theme/themeStore';
 import { startAutolock } from '../src/vault/autolock';
+import { startNetworkSync } from '../src/offline/syncQueue';
 import { ErrorBoundary } from '../src/ui/ErrorBoundary';
 import { LockOverlay } from '../src/ui/LockOverlay';
 
@@ -59,6 +60,13 @@ export default function RootLayout(): React.ReactElement | null {
 
   useEffect(() => {
     const stop = startAutolock();
+    return stop;
+  }, []);
+
+  useEffect(() => {
+    // Offline-first: drain the pending sync queue as soon as connectivity
+    // (re)appears, then refresh the entry queries.
+    const stop = startNetworkSync(queryClient);
     return stop;
   }, []);
 

@@ -57,7 +57,12 @@ export function LoginForm(): React.ReactElement {
 
     setSubmitting(true);
     try {
-      await unlockWithPassword(result.data.email, result.data.masterPassword);
+      // enableBiometrics persists the master key behind the platform
+      // keystore (native only) so the 24 h re-verification flow can restore
+      // the session without retyping the master password.
+      await unlockWithPassword(result.data.email, result.data.masterPassword, {
+        enableBiometrics: true,
+      });
       router.replace('/');
     } catch (err) {
       if (err instanceof ApiError && err.status === 401) {

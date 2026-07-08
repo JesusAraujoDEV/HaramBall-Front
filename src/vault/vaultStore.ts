@@ -7,10 +7,42 @@ import secureStoreAdapter from '../platform/secureStore';
 import biometricAdapter from '../platform/biometric';
 import * as authApi from '../api/auth';
 import { tokenStore, setSessionExpiredHandler } from '../api/tokenStore';
+import { getEnv } from '../config/env';
+import { getOfflineStore } from '../offline/localDb';
 
 const SECURE_STORE_MASTER_KEY = 'hb.masterKey';
 const SECURE_STORE_REFRESH_TOKEN = 'hb.refreshToken';
 const SECURE_STORE_EMAIL = 'hb.email';
+const SECURE_STORE_LAST_VERIFIED_AT = 'hb.lastVerifiedAt';
+
+/**
+ * Records a successful strong verification (master password, biometrics, or
+ * passkey). Within `sessionTtlMs` (default 24 h) of this moment the user is
+ * not re-prompted; past it, re-verification is mandatory.
+ */
+async function markVerifiedNow(): Promise<void> {
+  try {
+    if (secureStoreAdapter.isAvailable()) {
+      await secureStoreAdapter.save(SECURE_STORE_LAST_VERIFIED_AT, String(Date.now()));
+    }
+  } catch {
+    // Best-effort: absence just means the next unlock prompts again.
+  }
+}
+
+/** True while the last strong verification is younger than the session TTL. */
+async function isWithinVerificationWindow(): Promise<boolean> {
+  try {
+    if (!secureStoreAdapter.isAvailable()) return false;
+    const raw = await secureStoreAdapter.read(SECURE_STORE_LAST_VERIFIED_AT);
+    if (!raw) return false;
+    const verifiedAt = Number(raw);
+    if (!Number.isFinite(verifiedAt)) return false;
+    return Date.now() - verifiedAt < getEnv().sessionTtlMs;
+  } catch {
+    return false;
+  }
+}
 
 export type VaultStatus = 'locked' | 'unlocking' | 'unlocked';
 
@@ -65,6 +97,10 @@ export const useVaultStore = create<VaultState>((set, get) => ({
         }
       }
 
+      // A master-password login is itself a strong verification: it opens
+      // the 24 h window during which biometrics won't re-prompt.
+      await markVerifiedNow();
+
       zero(masterKey);
     } catch (err) {
       set({ status: 'locked', error: err instanceof Error ? err.message : 'Login failed' });
@@ -77,14 +113,21 @@ export const useVaultStore = create<VaultState>((set, get) => ({
       return false;
     }
 
-    const available = await biometricAdapter.isAvailable();
-    if (!available) {
-      return false;
-    }
+    // Once-per-day rule: inside the 24 h verification window the session is
+    // restored silently; past it, the biometric prompt is mandatory again.
+    const withinWindow = await isWithinVerificationWindow();
+    if (!withinWindow) {
+      const available = await biometricAdapter.isAvailable();
+      if (!available) {
+        return false;
+      }
 
-    const authenticated = await biometricAdapter.authenticate('Unlock HaramBall');
-    if (!authenticated) {
-      return false;
+      const authenticated = await biometricAdapter.authenticate('Unlock HaramBall');
+      if (!authenticated) {
+        return false;
+      }
+
+      await markVerifiedNow();
     }
 
     set({ status: 'unlocking', error: null });
@@ -131,6 +174,13 @@ export const useVaultStore = create<VaultState>((set, get) => ({
       await secureStoreAdapter.remove(SECURE_STORE_MASTER_KEY);
       await secureStoreAdapter.remove(SECURE_STORE_REFRESH_TOKEN);
       await secureStoreAdapter.remove(SECURE_STORE_EMAIL);
+      await secureStoreAdapter.remove(SECURE_STORE_LAST_VERIFIED_AT);
+    } catch {
+      // Best-effort cleanup.
+    }
+    try {
+      // Logout wipes the offline ciphertext cache and any queued changes.
+      getOfflineStore().clearAll();
     } catch {
       // Best-effort cleanup.
     }

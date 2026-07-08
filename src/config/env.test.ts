@@ -15,7 +15,14 @@ describe('validateEnv', () => {
       lockTimeoutMs: 60000,
       clipboardClearMs: 20000,
       argon2Profile: 'interactive',
+      // Optional with a 24 h default (the once-per-day verification rule).
+      sessionTtlMs: 86_400_000,
     });
+  });
+
+  it('honors an explicit EXPO_PUBLIC_SESSION_TTL_MS override', () => {
+    const env = validateEnv({ ...VALID_ENV, EXPO_PUBLIC_SESSION_TTL_MS: '3600000' });
+    expect(env.sessionTtlMs).toBe(3_600_000);
   });
 
   it('throws a descriptive error when EXPO_PUBLIC_API_BASE_URL is missing', () => {
