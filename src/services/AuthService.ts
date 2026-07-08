@@ -21,11 +21,11 @@ export const AuthService = {
     await authApi.register(email, authHash);
   },
 
-  async login(email: string, masterPassword: string): Promise<LoginResult> {
+  async login(email: string, masterPassword: string, totpCode?: string): Promise<LoginResult> {
     const masterKey = await deriveMasterKey(masterPassword, email);
     const { encryptionKey, indexKey, authHash } = deriveSubkeys(masterKey);
 
-    const response = await authApi.login(email, authHash);
+    const response = await authApi.login(email, authHash, totpCode);
 
     return {
       keys: { encryptionKey, indexKey },

@@ -25,11 +25,11 @@ export function register(email: string, authHash: string): Promise<RegisterRespo
   });
 }
 
-export function login(email: string, authHash: string): Promise<LoginResponse> {
+export function login(email: string, authHash: string, totpCode?: string): Promise<LoginResponse> {
   return request({
     method: 'POST',
     path: '/auth/login',
-    body: { email, password: authHash },
+    body: { email, password: authHash, ...(totpCode ? { totpCode } : {}) },
     auth: false,
     schema: loginResponseSchema,
   });

@@ -54,7 +54,11 @@ export interface VaultState {
   /** Set once a login/register/unlock call fails, for the UI to render; cleared on the next attempt. */
   error: string | null;
 
-  unlockWithPassword(email: string, masterPassword: string, opts?: { enableBiometrics?: boolean }): Promise<void>;
+  unlockWithPassword(
+    email: string,
+    masterPassword: string,
+    opts?: { enableBiometrics?: boolean; totpCode?: string },
+  ): Promise<void>;
   unlockWithBiometrics(): Promise<boolean>;
   lock(): void;
   logout(): Promise<void>;
@@ -81,7 +85,7 @@ export const useVaultStore = create<VaultState>((set, get) => ({
   async unlockWithPassword(email, masterPassword, opts) {
     set({ status: 'unlocking', error: null });
     try {
-      const { keys, tokens, masterKey } = await AuthService.login(email, masterPassword);
+      const { keys, tokens, masterKey } = await AuthService.login(email, masterPassword, opts?.totpCode);
 
       tokenStore.setTokens(tokens);
       set({ status: 'unlocked', keys, tokens, entries: {}, error: null });

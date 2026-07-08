@@ -19,6 +19,10 @@ export function LoginForm(): React.ReactElement {
 
   const [email, setEmail] = useState('');
   const [masterPassword, setMasterPassword] = useState('');
+  const [totpCode, setTotpCode] = useState('');
+  // Set once the backend replies TOTP_REQUIRED: the password was correct and
+  // the form now collects the authenticator code for a second submit.
+  const [needsTotp, setNeedsTotp] = useState(false);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [formError, setFormError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
@@ -62,11 +66,16 @@ export function LoginForm(): React.ReactElement {
       // the session without retyping the master password.
       await unlockWithPassword(result.data.email, result.data.masterPassword, {
         enableBiometrics: true,
+        totpCode: needsTotp ? totpCode.trim() : undefined,
       });
       router.replace('/');
     } catch (err) {
-      if (err instanceof ApiError && err.status === 401) {
-        setFormError('Incorrect email or password.');
+      if (err instanceof ApiError && err.code === 'TOTP_REQUIRED') {
+        // Password accepted; prompt for the authenticator code and retry.
+        setNeedsTotp(true);
+        setFormError('Enter the 6-digit code from your authenticator app.');
+      } else if (err instanceof ApiError && err.status === 401) {
+        setFormError(needsTotp ? 'Incorrect code, email, or password.' : 'Incorrect email or password.');
       } else if (err instanceof ApiError && err.status === 429) {
         const seconds = getRetryAfterSeconds(err);
         setRetryAfter(seconds ?? null);
@@ -129,6 +138,23 @@ export function LoginForm(): React.ReactElement {
           <Text className="text-sm text-red-600 dark:text-red-400">{fieldErrors.masterPassword}</Text>
         ) : null}
       </View>
+
+      {needsTotp ? (
+        <View className="gap-1.5">
+          <Text className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Authenticator code</Text>
+          <TextInput
+            className="h-12 rounded-xl border border-zinc-300 bg-zinc-50 px-4 text-center text-lg tracking-[8px] text-zinc-900 focus:border-zinc-500 focus:bg-white dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-50 dark:focus:border-zinc-400"
+            placeholder="000000"
+            placeholderTextColor="#a1a1aa"
+            keyboardType="number-pad"
+            maxLength={6}
+            value={totpCode}
+            onChangeText={setTotpCode}
+            autoFocus
+            testID="login-totp"
+          />
+        </View>
+      ) : null}
 
       {formError ? (
         <View className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 dark:border-red-900 dark:bg-red-950">
