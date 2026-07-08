@@ -1,0 +1,35 @@
+{
+  "cli": {
+    "version": ">= 12.0.0",
+    "appVersionSource": "remote"
+  },
+  "build": {
+    "preview": {
+      "distribution": "internal",
+      "android": {
+        "buildType": "apk"
+      },
+      "env": {
+        "EXPO_PUBLIC_API_BASE_URL": "https://haramball-back.jesusaraujo.lat",
+        "EXPO_PUBLIC_LOCK_TIMEOUT_MS": "60000",
+        "EXPO_PUBLIC_CLIPBOARD_CLEAR_MS": "20000",
+        "EXPO_PUBLIC_ARGON2_PROFILE": "interactive"
+      }
+    },
+    "production": {
+      "autoIncrement": true,
+      "android": {
+        "buildType": "app-bundle"
+      },
+      "env": {
+        "EXPO_PUBLIC_API_BASE_URL": "https://haramball-back.jesusaraujo.lat",
+        "EXPO_PUBLIC_LOCK_TIMEOUT_MS": "60000",
+        "EXPO_PUBLIC_CLIPBOARD_CLEAR_MS": "20000",
+        "EXPO_PUBLIC_ARGON2_PROFILE": "interactive"
+      }
+    }
+  },
+  "submit": {
+    "production": {}
+  }
+}
