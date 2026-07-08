@@ -24,17 +24,17 @@ export default function EditEntryScreen(): React.ReactElement {
     removeEntry(id);
     router.replace('/');
     return (
-      <View className="flex-1 items-center justify-center bg-white px-6">
-        <Text className="text-center text-gray-600">This entry no longer exists.</Text>
+      <View className="flex-1 items-center justify-center bg-zinc-100 px-6 dark:bg-zinc-950">
+        <Text className="text-center text-zinc-600 dark:text-zinc-400">This entry no longer exists.</Text>
       </View>
     );
   }
 
   if (entryQuery.isLoading || !entryQuery.data) {
     return (
-      <View className="flex-1 items-center justify-center bg-white">
+      <View className="flex-1 items-center justify-center bg-zinc-100 dark:bg-zinc-950">
         {entryQuery.isError ? (
-          <Text className="text-center text-red-600">{toUserMessage(entryQuery.error)}</Text>
+          <Text className="text-center text-red-600 dark:text-red-400">{toUserMessage(entryQuery.error)}</Text>
         ) : (
           <ActivityIndicator />
         )}

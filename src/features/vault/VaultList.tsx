@@ -7,18 +7,20 @@ import { EntryService } from '../../services/EntryService';
 import { SearchService } from '../../services/SearchService';
 import { SearchBar } from '../../ui/SearchBar';
 import { EntryCard } from '../../ui/EntryCard';
+import { ThemeToggle } from '../../ui/ThemeToggle';
 import { toUserMessage } from '../../utils/errorMessages';
 import type { PlainEntry } from '../../services/types';
 
 /**
- * Chat-style vault list: fetches + decrypts entries via TanStack Query on
- * unlock, supports title search and tag filtering with debounce, and shows
- * empty states rather than errors for no-match cases (Requirements 7.1,
- * 7.3, 7.5, 10.1, 10.2, 10.4, 10.5, 10.6, 11.1-11.4).
+ * Vault home: fetches + decrypts entries via TanStack Query on unlock,
+ * supports title search and tag filtering with debounce, and shows empty
+ * states rather than errors for no-match cases (Requirements 7.1, 7.3, 7.5,
+ * 10.1, 10.2, 10.4, 10.5, 10.6, 11.1-11.4).
  */
 export function VaultList(): React.ReactElement {
   const router = useRouter();
   const keys = useVaultStore((s) => s.keys);
+  const lock = useVaultStore((s) => s.lock);
   const [query, setQuery] = useState('');
   const [tagFilter, setTagFilter] = useState<string | null>(null);
 
@@ -67,46 +69,74 @@ export function VaultList(): React.ReactElement {
   }
 
   return (
-    <View className="flex-1 bg-white">
+    <View className="flex-1 bg-zinc-100 dark:bg-zinc-950">
+      <View className="flex-row items-center justify-between px-4 pb-2 pt-14">
+        <Text className="text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50">Vault</Text>
+        <View className="flex-row items-center gap-2">
+          <ThemeToggle />
+          <Pressable
+            onPress={lock}
+            className="rounded-full border border-zinc-200 bg-zinc-50 px-3 py-1.5 active:opacity-70 dark:border-zinc-800 dark:bg-zinc-900"
+            testID="vault-lock"
+            accessibilityRole="button"
+            accessibilityLabel="Lock vault"
+          >
+            <Text className="text-xs font-medium text-zinc-700 dark:text-zinc-300">Lock</Text>
+          </Pressable>
+        </View>
+      </View>
+
       <SearchBar value={query} onChangeDebounced={setQuery} testID="vault-search-bar" />
 
       {allTags.length > 0 ? (
-        <View className="flex-row flex-wrap gap-2 border-b border-gray-100 px-4 py-2">
+        <View className="flex-row flex-wrap items-center gap-2 px-4 pb-3 pt-1">
           {allTags.map((tag) => (
             <Pressable
               key={tag}
               onPress={() => setTagFilter(tagFilter === tag ? null : tag)}
               testID={`tag-filter-${tag}`}
-              className={`rounded-full px-3 py-1 ${tagFilter === tag ? 'bg-blue-600' : 'bg-gray-100'}`}
+              className={`rounded-full px-3 py-1 ${
+                tagFilter === tag
+                  ? 'bg-zinc-900 dark:bg-zinc-50'
+                  : 'border border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900'
+              }`}
             >
-              <Text className={tagFilter === tag ? 'text-white' : 'text-gray-700'}>{tag}</Text>
+              <Text
+                className={
+                  tagFilter === tag
+                    ? 'text-sm font-medium text-white dark:text-zinc-900'
+                    : 'text-sm text-zinc-600 dark:text-zinc-400'
+                }
+              >
+                {tag}
+              </Text>
             </Pressable>
           ))}
           {tagFilter ? (
             <Pressable onPress={clearTagFilter} testID="tag-filter-clear">
-              <Text className="text-blue-600">Clear filter</Text>
+              <Text className="text-sm text-zinc-500 underline dark:text-zinc-400">Clear filter</Text>
             </Pressable>
           ) : null}
         </View>
       ) : null}
 
       {isSearching ? (
-        <Pressable onPress={clearSearch} className="px-4 py-1">
-          <Text className="text-blue-600">Clear search</Text>
+        <Pressable onPress={clearSearch} className="px-4 pb-2">
+          <Text className="text-sm text-zinc-500 underline dark:text-zinc-400">Clear search</Text>
         </Pressable>
       ) : null}
 
       {activeQuery.isLoading ? (
         <View className="flex-1 items-center justify-center">
-          <ActivityIndicator />
+          <ActivityIndicator color="#a1a1aa" />
         </View>
       ) : activeQuery.isError ? (
         <View className="flex-1 items-center justify-center px-6">
-          <Text className="text-center text-red-600">{toUserMessage(activeQuery.error)}</Text>
+          <Text className="text-center text-red-600 dark:text-red-400">{toUserMessage(activeQuery.error)}</Text>
         </View>
       ) : entries.length === 0 ? (
         <View className="flex-1 items-center justify-center px-6" testID="vault-empty-state">
-          <Text className="text-center text-gray-500">
+          <Text className="text-center text-zinc-500 dark:text-zinc-400">
             {isSearching || isTagFiltering ? 'No matching entries.' : 'No entries yet. Create your first one.'}
           </Text>
         </View>
@@ -115,16 +145,17 @@ export function VaultList(): React.ReactElement {
           data={entries}
           keyExtractor={(item) => item.id}
           renderItem={({ item }) => <EntryCard entry={item} onPress={handleOpenEntry} />}
+          contentContainerStyle={{ paddingTop: 4, paddingBottom: 96 }}
           testID="vault-list"
         />
       )}
 
       <Pressable
         onPress={() => router.push('/entry/new')}
-        className="absolute bottom-6 right-6 h-14 w-14 items-center justify-center rounded-full bg-blue-600"
+        className="absolute bottom-6 right-6 h-14 w-14 items-center justify-center rounded-full bg-zinc-900 shadow-lg active:opacity-80 dark:bg-zinc-50"
         testID="vault-new-entry"
       >
-        <Text className="text-2xl text-white">+</Text>
+        <Text className="text-2xl text-white dark:text-zinc-900">+</Text>
       </Pressable>
     </View>
   );

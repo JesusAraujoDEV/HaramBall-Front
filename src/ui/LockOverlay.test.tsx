@@ -5,6 +5,15 @@ process.env.EXPO_PUBLIC_ARGON2_PROFILE = 'interactive';
 
 import React from 'react';
 import { render } from '@testing-library/react-native';
+
+// Mock expo-router (same pattern as the other component tests): importing
+// the real module at test time requires a browser `window.location`.
+// `useSegments: () => []` places the overlay outside the `(auth)` group so
+// its cover contract is what gets exercised.
+jest.mock('expo-router', () => ({
+  useSegments: () => [],
+}));
+
 import useVaultStore from '../vault/vaultStore';
 import { LockOverlay } from './LockOverlay';
 

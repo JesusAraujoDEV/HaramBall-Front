@@ -73,12 +73,12 @@ export function EntryEditor({ mode, entryId, initialEntry }: Props): React.React
   }
 
   return (
-    <ScrollView className="flex-1 bg-white">
-      <View className="gap-4 p-6">
-        <Text className="text-lg font-semibold text-gray-900">
+    <ScrollView className="flex-1 bg-zinc-100 dark:bg-zinc-950">
+      <View className="gap-4 p-4 pt-14">
+        <Text className="text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50">
           {mode === 'create' ? 'New entry' : 'Edit entry'}
         </Text>
-        <Text className="text-sm text-gray-500">
+        <Text className="text-sm text-zinc-500 dark:text-zinc-400">
           The first line is the title; everything after is the body.
         </Text>
 
@@ -87,22 +87,27 @@ export function EntryEditor({ mode, entryId, initialEntry }: Props): React.React
           onChangeText={setText}
           multiline
           textAlignVertical="top"
-          className="min-h-[160px] rounded-lg border border-gray-300 p-3"
+          className="min-h-[160px] rounded-2xl border border-zinc-300 bg-white p-4 text-base text-zinc-900 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50"
           placeholder={'Bancamiga\nuser@example.com\nPASSWORD123'}
+          placeholderTextColor="#a1a1aa"
           testID="entry-text"
         />
 
         <TagInput tags={tags} onChange={setTags} />
 
-        {error ? <Text className="text-red-600">{error}</Text> : null}
+        {error ? <Text className="text-red-600 dark:text-red-400">{error}</Text> : null}
 
         <Pressable
           onPress={handleSubmit}
           disabled={submitting}
-          className="items-center rounded-lg bg-blue-600 py-3 disabled:opacity-60"
+          className="items-center rounded-xl bg-zinc-900 py-3 active:opacity-80 disabled:opacity-60 dark:bg-zinc-50"
           testID="entry-save"
         >
-          {submitting ? <ActivityIndicator color="#fff" /> : <Text className="font-medium text-white">Save</Text>}
+          {submitting ? (
+            <ActivityIndicator color="#a1a1aa" />
+          ) : (
+            <Text className="font-semibold text-white dark:text-zinc-900">Save</Text>
+          )}
         </Pressable>
       </View>
     </ScrollView>
