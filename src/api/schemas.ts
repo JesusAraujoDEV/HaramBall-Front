@@ -27,8 +27,19 @@ export const loginResponseSchema = z.object({
   accessToken: z.string(),
   refreshToken: z.string(),
   expiresIn: z.number(),
+  // Password-wrapped Vault Key envelope; null for legacy accounts that
+  // predate the Recovery Kit (they still use password-derived data keys).
+  wrappedVkPw: z.string().nullable().optional(),
 });
 export type LoginResponse = z.infer<typeof loginResponseSchema>;
+
+export const recoverResponseSchema = z.object({
+  accessToken: z.string(),
+  refreshToken: z.string(),
+  expiresIn: z.number(),
+  wrappedVkRk: z.string(),
+});
+export type RecoverResponse = z.infer<typeof recoverResponseSchema>;
 
 export const refreshResponseSchema = z.object({
   accessToken: z.string(),

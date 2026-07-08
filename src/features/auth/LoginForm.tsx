@@ -226,6 +226,13 @@ export function LoginForm(): React.ReactElement {
         </Pressable>
       ) : null}
 
+      <Pressable onPress={() => router.push('/recover')} className="py-1" testID="login-forgot">
+        <Text className="text-center text-sm text-zinc-500 dark:text-zinc-400">
+          Forgot your master password?{' '}
+          <Text className="font-semibold text-zinc-900 underline dark:text-zinc-50">Recover with your key</Text>
+        </Text>
+      </Pressable>
+
       <Pressable onPress={() => router.replace('/register')} className="py-1">
         <Text className="text-center text-sm text-zinc-500 dark:text-zinc-400">
           Need an account? <Text className="font-semibold text-zinc-900 underline dark:text-zinc-50">Register</Text>

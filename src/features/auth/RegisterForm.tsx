@@ -5,6 +5,7 @@ import { useColorScheme } from 'nativewind';
 import { AuthService } from '../../services/AuthService';
 import { ApiError } from '../../api/errors';
 import { toUserMessage } from '../../utils/errorMessages';
+import { RecoveryCodeCard } from '../../ui/RecoveryCodeCard';
 import { registerSchema } from './schemas';
 
 /**
@@ -21,6 +22,9 @@ export function RegisterForm(): React.ReactElement {
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [formError, setFormError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  // Set to the generated Recovery Key after a successful registration; the
+  // form is replaced by a one-time "write this down" screen until confirmed.
+  const [recoveryCode, setRecoveryCode] = useState<string | null>(null);
   // A ref (not just the `submitting` state) guards re-entrancy: React state
   // updates are batched/async, so two synchronous button presses in the
   // same tick would both see the stale `submitting === false` value if we
@@ -49,8 +53,11 @@ export function RegisterForm(): React.ReactElement {
 
     setSubmitting(true);
     try {
-      await AuthService.register(result.data.email, result.data.masterPassword);
-      router.replace('/login');
+      const { recoveryCode: code } = await AuthService.register(
+        result.data.email,
+        result.data.masterPassword,
+      );
+      setRecoveryCode(code);
     } catch (err) {
       if (err instanceof ApiError && err.status === 409) {
         setFormError('This email is already registered.');
@@ -61,6 +68,29 @@ export function RegisterForm(): React.ReactElement {
       submittingRef.current = false;
       setSubmitting(false);
     }
+  }
+
+  if (recoveryCode) {
+    return (
+      <View className="w-full max-w-md gap-5 self-center rounded-3xl border border-zinc-200 bg-white p-8 shadow-xl dark:border-zinc-800 dark:bg-zinc-900">
+        <View className="items-center">
+          <Text className="text-2xl font-bold text-zinc-900 dark:text-zinc-50">Account created 🎉</Text>
+          <Text className="mt-1 text-center text-sm text-zinc-500 dark:text-zinc-400">
+            One last thing — save your Recovery Key.
+          </Text>
+        </View>
+
+        <RecoveryCodeCard code={recoveryCode} />
+
+        <Pressable
+          onPress={() => router.replace('/login')}
+          className="h-12 items-center justify-center rounded-xl bg-zinc-900 active:opacity-80 dark:bg-zinc-50"
+          testID="register-recovery-done"
+        >
+          <Text className="text-base font-semibold text-white dark:text-zinc-900">I've saved it — continue</Text>
+        </Pressable>
+      </View>
+    );
   }
 
   return (

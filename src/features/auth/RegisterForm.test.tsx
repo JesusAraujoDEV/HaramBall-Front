@@ -55,15 +55,20 @@ describe('RegisterForm', () => {
     expect(AuthService.register).not.toHaveBeenCalled();
   });
 
-  it('submits and navigates to login on success', async () => {
-    (AuthService.register as jest.Mock).mockResolvedValue(undefined);
-    const { getByTestId } = await render(<RegisterForm />);
+  it('shows the Recovery Key on success, then navigates to login once confirmed', async () => {
+    (AuthService.register as jest.Mock).mockResolvedValue({ recoveryCode: 'HB-K7QF-9M2A-XR4T-8WZP-3JD6-QW1E' });
+    const { getByTestId, findByTestId, findByText } = await render(<RegisterForm />);
     await fireEvent.changeText(getByTestId('register-email'), 'user@example.com');
     await fireEvent.changeText(getByTestId('register-password'), 'correcthorsebattery');
     await fireEvent.changeText(getByTestId('register-confirm-password'), 'correcthorsebattery');
     await fireEvent.press(getByTestId('register-submit'));
 
     await waitFor(() => expect(AuthService.register).toHaveBeenCalledWith('user@example.com', 'correcthorsebattery'));
+    // The one-time Recovery Key screen appears; navigation waits for confirmation.
+    await findByText(/HB-K7QF-9M2A-XR4T-8WZP-3JD6-QW1E/);
+    expect(mockReplace).not.toHaveBeenCalled();
+
+    await fireEvent.press(await findByTestId('register-recovery-done'));
     await waitFor(() => expect(mockReplace).toHaveBeenCalledWith('/login'));
   });
 

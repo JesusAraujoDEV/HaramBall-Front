@@ -12,6 +12,7 @@ import { getOfflineStore } from '../offline/localDb';
 const SECURE_STORE_MASTER_KEY = 'hb.masterKey';
 const SECURE_STORE_REFRESH_TOKEN = 'hb.refreshToken';
 const SECURE_STORE_EMAIL = 'hb.email';
+const SECURE_STORE_VAULT_KEY = 'hb.vaultKey';
 
 export type VaultStatus = 'locked' | 'unlocking' | 'unlocked';
 
@@ -20,6 +21,12 @@ export interface VaultState {
   keys: SessionKeys | null;
   entries: Record<string, PlainEntry>;
   tokens: AuthTokens | null;
+  /**
+   * The in-memory Vault Key of the current session (Recovery Kit). Kept so
+   * Settings can regenerate the Recovery Key without re-login. Null for legacy
+   * accounts not yet on the Vault Key model.
+   */
+  vaultKey: Uint8Array | null;
   /** Set once a login/register/unlock call fails, for the UI to render; cleared on the next attempt. */
   error: string | null;
 
@@ -29,12 +36,41 @@ export interface VaultState {
     opts?: { enableBiometrics?: boolean; totpCode?: string },
   ): Promise<void>;
   unlockWithBiometrics(): Promise<boolean>;
+  /** Recovery login: unlock with the Recovery Key and set a new password. */
+  recoverWithKey(email: string, recoveryCodeCanonical: string, newMasterPassword: string): Promise<void>;
+  /** Regenerates the Recovery Key for the current Vault Key; returns the new code to show. */
+  regenerateRecovery(): Promise<string>;
   lock(): void;
   logout(): Promise<void>;
 
   setEntries(entries: PlainEntry[]): void;
   upsertEntry(entry: PlainEntry): void;
   removeEntry(id: string): void;
+}
+
+/**
+ * Persists the session behind the platform keystore for biometric unlock,
+ * including the Vault Key (when present) so a fingerprint restore derives the
+ * correct data keys.
+ */
+async function persistBiometricSession(
+  email: string,
+  masterKey: Uint8Array,
+  refreshToken: string,
+  vaultKey: Uint8Array | null,
+): Promise<void> {
+  const masterKeyB64 = sodium.to_base64(masterKey, sodium.base64_variants.ORIGINAL);
+  await secureStoreAdapter.save(SECURE_STORE_MASTER_KEY, masterKeyB64);
+  await secureStoreAdapter.save(SECURE_STORE_REFRESH_TOKEN, refreshToken);
+  await secureStoreAdapter.save(SECURE_STORE_EMAIL, email);
+  if (vaultKey) {
+    await secureStoreAdapter.save(
+      SECURE_STORE_VAULT_KEY,
+      sodium.to_base64(vaultKey, sodium.base64_variants.ORIGINAL),
+    );
+  } else {
+    await secureStoreAdapter.remove(SECURE_STORE_VAULT_KEY);
+  }
 }
 
 /** Best-effort zeroing of key material so it doesn't linger in memory after lock (Requirement 5.5). */
@@ -49,22 +85,24 @@ export const useVaultStore = create<VaultState>((set, get) => ({
   keys: null,
   entries: {},
   tokens: null,
+  vaultKey: null,
   error: null,
 
   async unlockWithPassword(email, masterPassword, opts) {
     set({ status: 'unlocking', error: null });
     try {
-      const { keys, tokens, masterKey } = await AuthService.login(email, masterPassword, opts?.totpCode);
+      const { keys, tokens, masterKey, vaultKey } = await AuthService.login(
+        email,
+        masterPassword,
+        opts?.totpCode,
+      );
 
       tokenStore.setTokens(tokens);
-      set({ status: 'unlocked', keys, tokens, entries: {}, error: null });
+      set({ status: 'unlocked', keys, tokens, vaultKey, entries: {}, error: null });
 
       if (opts?.enableBiometrics && secureStoreAdapter.isAvailable()) {
         try {
-          const masterKeyB64 = sodium.to_base64(masterKey, sodium.base64_variants.ORIGINAL);
-          await secureStoreAdapter.save(SECURE_STORE_MASTER_KEY, masterKeyB64);
-          await secureStoreAdapter.save(SECURE_STORE_REFRESH_TOKEN, tokens.refreshToken);
-          await secureStoreAdapter.save(SECURE_STORE_EMAIL, email);
+          await persistBiometricSession(email, masterKey, tokens.refreshToken, vaultKey);
         } catch {
           // Best-effort: biometric opt-in persistence failing must not block unlock.
         }
@@ -86,9 +124,10 @@ export const useVaultStore = create<VaultState>((set, get) => ({
     // on the first master-password login. Read it BEFORE prompting so a fresh
     // install never shows a pointless fingerprint prompt with nothing to
     // restore.
-    const [masterKeyB64, refreshToken] = await Promise.all([
+    const [masterKeyB64, refreshToken, vaultKeyB64] = await Promise.all([
       secureStoreAdapter.read(SECURE_STORE_MASTER_KEY),
       secureStoreAdapter.read(SECURE_STORE_REFRESH_TOKEN),
+      secureStoreAdapter.read(SECURE_STORE_VAULT_KEY),
     ]);
     if (!masterKeyB64 || !refreshToken) {
       return false;
@@ -110,13 +149,18 @@ export const useVaultStore = create<VaultState>((set, get) => ({
     set({ status: 'unlocking', error: null });
     try {
       const masterKey = sodium.from_base64(masterKeyB64, sodium.base64_variants.ORIGINAL);
-      const { encryptionKey, indexKey } = deriveSubkeys(masterKey);
+      // Data keys come from the Vault Key when present (Recovery Kit accounts),
+      // otherwise from the master key (legacy accounts).
+      const vaultKey = vaultKeyB64
+        ? sodium.from_base64(vaultKeyB64, sodium.base64_variants.ORIGINAL)
+        : null;
+      const { encryptionKey, indexKey } = deriveSubkeys(vaultKey ?? masterKey);
 
       const refreshResult = await authApi.refresh(refreshToken);
       const tokens: AuthTokens = { accessToken: refreshResult.accessToken, refreshToken };
 
       tokenStore.setTokens(tokens);
-      set({ status: 'unlocked', keys: { encryptionKey, indexKey }, tokens, entries: {}, error: null });
+      set({ status: 'unlocked', keys: { encryptionKey, indexKey }, tokens, vaultKey, entries: {}, error: null });
 
       zero(masterKey);
       return true;
@@ -126,21 +170,55 @@ export const useVaultStore = create<VaultState>((set, get) => ({
     }
   },
 
+  async recoverWithKey(email, recoveryCodeCanonical, newMasterPassword) {
+    set({ status: 'unlocking', error: null });
+    try {
+      const { keys, tokens, masterKey, vaultKey } = await AuthService.recoverAndResetPassword(
+        email,
+        recoveryCodeCanonical,
+        newMasterPassword,
+      );
+      tokenStore.setTokens(tokens);
+      set({ status: 'unlocked', keys, tokens, vaultKey, entries: {}, error: null });
+      if (secureStoreAdapter.isAvailable()) {
+        try {
+          await persistBiometricSession(email, masterKey, tokens.refreshToken, vaultKey);
+        } catch {
+          // Best-effort.
+        }
+      }
+      zero(masterKey);
+    } catch (err) {
+      set({ status: 'locked', error: err instanceof Error ? err.message : 'Recovery failed' });
+      throw err;
+    }
+  },
+
+  async regenerateRecovery() {
+    const { vaultKey } = get();
+    if (!vaultKey) {
+      throw new Error('Recovery Key is only available once your vault is on the Recovery Kit model.');
+    }
+    return AuthService.regenerateRecoveryKey(vaultKey);
+  },
+
   lock() {
-    const { keys } = get();
+    const { keys, vaultKey } = get();
     zero(keys?.encryptionKey);
     zero(keys?.indexKey);
+    zero(vaultKey);
     tokenStore.setTokens(null);
-    set({ status: 'locked', keys: null, entries: {}, tokens: null });
+    set({ status: 'locked', keys: null, entries: {}, tokens: null, vaultKey: null });
   },
 
   async logout() {
-    const { tokens, keys } = get();
+    const { tokens, keys, vaultKey } = get();
     await AuthService.logout(tokens?.refreshToken ?? null);
     try {
       await secureStoreAdapter.remove(SECURE_STORE_MASTER_KEY);
       await secureStoreAdapter.remove(SECURE_STORE_REFRESH_TOKEN);
       await secureStoreAdapter.remove(SECURE_STORE_EMAIL);
+      await secureStoreAdapter.remove(SECURE_STORE_VAULT_KEY);
     } catch {
       // Best-effort cleanup.
     }
@@ -152,8 +230,9 @@ export const useVaultStore = create<VaultState>((set, get) => ({
     }
     zero(keys?.encryptionKey);
     zero(keys?.indexKey);
+    zero(vaultKey);
     tokenStore.setTokens(null);
-    set({ status: 'locked', keys: null, entries: {}, tokens: null, error: null });
+    set({ status: 'locked', keys: null, entries: {}, tokens: null, vaultKey: null, error: null });
   },
 
   setEntries(entries) {

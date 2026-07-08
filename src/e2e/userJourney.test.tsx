@@ -60,9 +60,9 @@ describe('End-to-end user journey', () => {
   });
 
   it('covers the full journey without leaking plaintext and clears state on logout/lock', async () => {
-    // 1. Register
+    // 1. Register (now also sends the opaque Recovery Kit envelopes).
     await AuthService.register(email, masterPassword);
-    expect(authApi.register).toHaveBeenCalledWith(email, expect.any(String));
+    expect(authApi.register).toHaveBeenCalledWith(email, expect.any(String), expect.any(Object));
 
     // 2. Login / unlock
     await useVaultStore.getState().unlockWithPassword(email, masterPassword);

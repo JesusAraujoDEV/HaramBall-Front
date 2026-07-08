@@ -134,6 +134,15 @@ export function VaultList({ onSelectEntry }: Props = {}): React.ReactElement {
           <PasskeyButton />
           <ThemeToggle />
           <Pressable
+            onPress={() => router.push('/settings')}
+            className="rounded-full border border-zinc-200 bg-zinc-50 px-3 py-1.5 active:opacity-70 dark:border-zinc-800 dark:bg-zinc-900"
+            testID="vault-settings"
+            accessibilityRole="button"
+            accessibilityLabel="Settings"
+          >
+            <Text className="text-xs font-medium text-zinc-700 dark:text-zinc-300">⚙</Text>
+          </Pressable>
+          <Pressable
             onPress={lock}
             className="rounded-full border border-zinc-200 bg-zinc-50 px-3 py-1.5 active:opacity-70 dark:border-zinc-800 dark:bg-zinc-900"
             testID="vault-lock"
