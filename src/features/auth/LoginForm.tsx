@@ -145,7 +145,7 @@ export function LoginForm(): React.ReactElement {
       <View className="gap-1.5">
         <Text className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Email</Text>
         <TextInput
-          className="h-12 rounded-xl border border-zinc-300 bg-zinc-50 px-4 text-base text-zinc-900 focus:border-zinc-500 focus:bg-white dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-50 dark:focus:border-zinc-400"
+          className="h-12 rounded-xl border border-zinc-300 bg-zinc-50 px-4 text-base text-zinc-900 focus:border-zinc-500 focus:bg-white dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-50 dark:focus:border-zinc-400 dark:focus:bg-zinc-950"
           placeholder="you@example.com"
           placeholderTextColor="#a1a1aa"
           autoCapitalize="none"
@@ -161,7 +161,7 @@ export function LoginForm(): React.ReactElement {
       <View className="gap-1.5">
         <Text className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Master Password</Text>
         <TextInput
-          className="h-12 rounded-xl border border-zinc-300 bg-zinc-50 px-4 text-base text-zinc-900 focus:border-zinc-500 focus:bg-white dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-50 dark:focus:border-zinc-400"
+          className="h-12 rounded-xl border border-zinc-300 bg-zinc-50 px-4 text-base text-zinc-900 focus:border-zinc-500 focus:bg-white dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-50 dark:focus:border-zinc-400 dark:focus:bg-zinc-950"
           placeholder="••••••••••••"
           placeholderTextColor="#a1a1aa"
           secureTextEntry
@@ -178,7 +178,7 @@ export function LoginForm(): React.ReactElement {
         <View className="gap-1.5">
           <Text className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Authenticator code</Text>
           <TextInput
-            className="h-12 rounded-xl border border-zinc-300 bg-zinc-50 px-4 text-center text-lg tracking-[8px] text-zinc-900 focus:border-zinc-500 focus:bg-white dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-50 dark:focus:border-zinc-400"
+            className="h-12 rounded-xl border border-zinc-300 bg-zinc-50 px-4 text-center text-lg tracking-[8px] text-zinc-900 focus:border-zinc-500 focus:bg-white dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-50 dark:focus:border-zinc-400 dark:focus:bg-zinc-950"
             placeholder="000000"
             placeholderTextColor="#a1a1aa"
             keyboardType="number-pad"
