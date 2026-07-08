@@ -3,7 +3,7 @@ import { ActivityIndicator, Alert, Platform, Pressable, ScrollView, Text, View }
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import useVaultStore from '../../vault/vaultStore';
 import { EntryService } from '../../services/EntryService';
-import { detectFields, type DetectedField } from '../../utils/entryText';
+import { canonicalFieldKey, parseStructuredBody } from '../../utils/entryText';
 import { FieldCopyRow } from '../../ui/FieldCopyRow';
 import { PasswordHistory } from './PasswordHistory';
 import clipboardAdapter from '../../platform/clipboard';
@@ -127,9 +127,12 @@ export function EntryDetail({ entryId, onGone, onEdit, onBack }: Props): React.R
   }
 
   const entry = entryQuery.data;
-  const fields = detectFields(entry.body);
-  const userField: DetectedField | undefined = fields.find((f) => f.label === 'user' || f.label === 'email');
-  const passwordField: DetectedField | undefined = fields.find((f) => f.label === 'password');
+  const { fields, notes } = parseStructuredBody(entry.body);
+  const userField = fields.find((f) => {
+    const key = canonicalFieldKey(f.label);
+    return key === 'user' || key === 'email';
+  });
+  const passwordField = fields.find((f) => canonicalFieldKey(f.label) === 'password');
 
   return (
     <ScrollView className="flex-1 bg-zinc-100 dark:bg-zinc-950" contentContainerStyle={{ paddingBottom: 48 }}>
@@ -174,16 +177,19 @@ export function EntryDetail({ entryId, onGone, onEdit, onBack }: Props): React.R
           </View>
         ) : null}
 
-        {entry.body.length > 0 ? (
+        {notes.length > 0 ? (
           <View className="mt-4 overflow-hidden rounded-2xl border border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900">
-            <Text className="whitespace-pre-wrap p-4 text-zinc-900 dark:text-zinc-50">{entry.body}</Text>
+            <Text className="px-4 pt-3 text-xs font-medium uppercase tracking-wider text-zinc-400 dark:text-zinc-500">
+              Notes
+            </Text>
+            <Text className="whitespace-pre-wrap p-4 pt-1 text-zinc-900 dark:text-zinc-50">{notes}</Text>
             <Pressable
-              onPress={() => handleCopyBody(entry.body)}
+              onPress={() => handleCopyBody(notes)}
               className="border-t border-zinc-100 px-4 py-3 active:bg-zinc-50 dark:border-zinc-800 dark:active:bg-zinc-800"
               testID="copy-body"
             >
               <Text className="text-center text-sm font-medium text-zinc-700 dark:text-zinc-300">
-                {copiedBody ? 'Copied!' : 'Copy full body'}
+                {copiedBody ? 'Copied!' : 'Copy notes'}
               </Text>
             </Pressable>
           </View>

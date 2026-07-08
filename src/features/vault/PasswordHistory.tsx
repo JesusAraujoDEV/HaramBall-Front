@@ -3,7 +3,7 @@ import { ActivityIndicator, Pressable, Text, View } from 'react-native';
 import { useQuery } from '@tanstack/react-query';
 import useVaultStore from '../../vault/vaultStore';
 import { EntryService } from '../../services/EntryService';
-import { detectFields } from '../../utils/entryText';
+import { parseStructuredBody } from '../../utils/entryText';
 import { FieldCopyRow } from '../../ui/FieldCopyRow';
 import { toUserMessage } from '../../utils/errorMessages';
 import type { PlainBodyVersion } from '../../services/types';
@@ -13,7 +13,7 @@ interface Props {
 }
 
 function VersionCard({ version, index }: { version: PlainBodyVersion; index: number }): React.ReactElement {
-  const fields = detectFields(version.body);
+  const { fields } = parseStructuredBody(version.body);
   const changed = new Date(version.changedAt);
 
   return (

@@ -47,9 +47,10 @@ describe('EntryEditor', () => {
     });
   });
 
-  it('blocks submission when the title (first line) is blank', async () => {
+  it('blocks submission when the title is blank', async () => {
     const { getByTestId, findByText } = await renderWithClient(<EntryEditor mode="create" />);
-    await fireEvent.changeText(getByTestId('entry-text'), '\nonly a body, no title');
+    // Leave the title empty; fill a field so only the title is missing.
+    await fireEvent.changeText(getByTestId('entry-field-value-0'), 'user@x.com');
     await fireEvent.press(getByTestId('entry-save'));
 
     await findByText(/enter a title/i);
@@ -67,32 +68,42 @@ describe('EntryEditor', () => {
     expect(queryByTestId('tag-chip-banca')).toBeNull();
   });
 
-  it('creates an entry with the parsed title/body and tags, then navigates back', async () => {
+  it('creates an entry with the title, structured fields and tags, then navigates back', async () => {
     (EntryService.create as jest.Mock).mockResolvedValue({
       id: 'e1',
       title: 'Bancamiga',
-      body: 'user@x.com',
+      body: '',
       tags: ['banca'],
       createdAt: 'a',
       updatedAt: 'a',
     });
 
     const { getByTestId } = await renderWithClient(<EntryEditor mode="create" />);
-    await fireEvent.changeText(getByTestId('entry-text'), 'Bancamiga\nuser@x.com');
+    await fireEvent.changeText(getByTestId('entry-title'), 'Bancamiga');
+    // Default fields are correo/usuario/password; fill correo (index 0).
+    await fireEvent.changeText(getByTestId('entry-field-value-0'), 'user@x.com');
     await fireEvent.changeText(getByTestId('tag-input'), 'banca');
     await fireEvent.press(getByTestId('tag-add'));
     await fireEvent.press(getByTestId('entry-save'));
 
     await waitFor(() =>
-      expect(EntryService.create).toHaveBeenCalledWith('Bancamiga', 'user@x.com', ['banca'], expect.anything()),
+      expect(EntryService.create).toHaveBeenCalledWith(
+        'Bancamiga',
+        expect.stringContaining('user@x.com'),
+        ['banca'],
+        expect.anything(),
+      ),
     );
+    // The serialized body carries the correo label and value as structured JSON.
+    const body = (EntryService.create as jest.Mock).mock.calls[0][1] as string;
+    expect(JSON.parse(body)).toMatchObject({ fields: [{ label: 'correo', value: 'user@x.com' }] });
     await waitFor(() => expect(mockBack).toHaveBeenCalled());
   });
 
   it('shows a too-large message on 413', async () => {
     (EntryService.create as jest.Mock).mockRejectedValue(new ApiError('PAYLOAD_TOO_LARGE', 'Too large', 413));
     const { getByTestId, findByText } = await renderWithClient(<EntryEditor mode="create" />);
-    await fireEvent.changeText(getByTestId('entry-text'), 'Title\nbody');
+    await fireEvent.changeText(getByTestId('entry-title'), 'Title');
     await fireEvent.press(getByTestId('entry-save'));
 
     await findByText(/too large/i);

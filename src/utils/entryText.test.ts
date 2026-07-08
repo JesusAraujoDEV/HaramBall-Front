@@ -1,4 +1,11 @@
-import { parseEntryText, serializeEntryText, detectFields } from './entryText';
+import {
+  parseEntryText,
+  serializeEntryText,
+  detectFields,
+  serializeStructuredBody,
+  parseStructuredBody,
+  canonicalFieldKey,
+} from './entryText';
 
 describe('parseEntryText', () => {
   it('splits the first line as title and the rest as body', () => {
@@ -95,5 +102,49 @@ describe('detectFields', () => {
 
   it('skips a label with no value after it', () => {
     expect(detectFields('Password:')).toEqual([]);
+  });
+});
+
+describe('structured body', () => {
+  it('round-trips fields and notes through serialize/parse', () => {
+    const fields = [
+      { label: 'correo', value: 'casjd@fansd.c' },
+      { label: 'password', value: 'sajdjasd' },
+      { label: 'client id', value: 'jasdjasjd' },
+    ];
+    const body = serializeStructuredBody(fields, 'extra note');
+    const parsed = parseStructuredBody(body);
+    expect(parsed.fields).toEqual(fields);
+    expect(parsed.notes).toBe('extra note');
+  });
+
+  it('drops fully-blank fields on serialize', () => {
+    const body = serializeStructuredBody(
+      [
+        { label: 'correo', value: 'a@b.c' },
+        { label: '', value: '' },
+      ],
+      '',
+    );
+    expect(parseStructuredBody(body).fields).toEqual([{ label: 'correo', value: 'a@b.c' }]);
+  });
+
+  it('returns an empty string when there is nothing to store', () => {
+    expect(serializeStructuredBody([{ label: '', value: '' }], '   ')).toBe('');
+    expect(parseStructuredBody('')).toEqual({ fields: [], notes: '' });
+  });
+
+  it('parses a legacy free-text body into detected fields plus raw notes', () => {
+    const parsed = parseStructuredBody('Usuario: admin\nPassword: hunter2');
+    expect(parsed.fields).toContainEqual({ label: 'user', value: 'admin' });
+    expect(parsed.fields).toContainEqual({ label: 'password', value: 'hunter2' });
+    expect(parsed.notes).toBe('Usuario: admin\nPassword: hunter2');
+  });
+
+  it('maps user-authored labels to canonical quick-copy keys', () => {
+    expect(canonicalFieldKey('Correo')).toBe('email');
+    expect(canonicalFieldKey('usuario')).toBe('user');
+    expect(canonicalFieldKey('Contraseña')).toBe('password');
+    expect(canonicalFieldKey('client id')).toBeNull();
   });
 });
