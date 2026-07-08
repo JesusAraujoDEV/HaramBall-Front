@@ -122,6 +122,15 @@ export function VaultList({ onSelectEntry }: Props = {}): React.ReactElement {
       <View className="flex-row items-center justify-between px-4 pb-2 pt-14">
         <Text className="text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50">Vault</Text>
         <View className="flex-row items-center gap-2">
+          <Pressable
+            onPress={() => router.push('/totp')}
+            className="rounded-full border border-zinc-200 bg-zinc-50 px-3 py-1.5 active:opacity-70 dark:border-zinc-800 dark:bg-zinc-900"
+            testID="vault-2fa"
+            accessibilityRole="button"
+            accessibilityLabel="Two-factor authentication"
+          >
+            <Text className="text-xs font-medium text-zinc-700 dark:text-zinc-300">2FA</Text>
+          </Pressable>
           <PasskeyButton />
           <ThemeToggle />
           <Pressable

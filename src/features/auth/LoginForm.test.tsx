@@ -44,6 +44,35 @@ describe('LoginForm', () => {
     await findByText(/incorrect email or password/i);
   });
 
+  it('prompts for the authenticator code on TOTP_REQUIRED, then logs in with it', async () => {
+    const unlockSpy = jest
+      .spyOn(useVaultStore.getState(), 'unlockWithPassword')
+      .mockRejectedValueOnce(new ApiError('TOTP_REQUIRED', 'Authentication code required', 401))
+      .mockResolvedValueOnce(undefined);
+    useVaultStore.setState({ unlockWithPassword: unlockSpy as unknown as VaultState['unlockWithPassword'] });
+
+    const { getByTestId, findByTestId, findByText } = await render(<LoginForm />);
+    await fireEvent.changeText(getByTestId('login-email'), 'user@example.com');
+    await fireEvent.changeText(getByTestId('login-password'), 'password123456');
+    await fireEvent.press(getByTestId('login-submit'));
+
+    // First submit surfaces the code field.
+    const codeInput = await findByTestId('login-totp');
+    await findByText(/authenticator app/i);
+
+    // Second submit includes the code and completes login.
+    await fireEvent.changeText(codeInput, '123456');
+    await fireEvent.press(getByTestId('login-submit'));
+
+    await waitFor(() =>
+      expect(unlockSpy).toHaveBeenLastCalledWith('user@example.com', 'password123456', {
+        enableBiometrics: true,
+        totpCode: '123456',
+      }),
+    );
+    await waitFor(() => expect(mockReplace).toHaveBeenCalledWith('/'));
+  });
+
   it('shows a rate-limit message with a Retry-After countdown on 429', async () => {
     const unlockSpy = jest
       .spyOn(useVaultStore.getState(), 'unlockWithPassword')
