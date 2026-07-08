@@ -1,0 +1,11 @@
+node_modules
+dist
+.expo
+.git
+.gitignore
+.env
+.env.*
+!.env.example
+*.md
+.kiro
+coverage
