@@ -4,10 +4,12 @@ import {
   KDF_CONTEXT_AUTH,
   KDF_CONTEXT_ENCRYPTION,
   KDF_CONTEXT_INDEX,
+  KDF_CONTEXT_WRAP,
   KDF_SALT_BYTES,
   KDF_SUBKEY_ID_AUTH,
   KDF_SUBKEY_ID_ENCRYPTION,
   KDF_SUBKEY_ID_INDEX,
+  KDF_SUBKEY_ID_WRAP,
   MASTER_KEY_BYTES,
   SUBKEY_BYTES,
 } from './constants';
@@ -78,4 +80,21 @@ export function deriveSubkeys(masterKey: Uint8Array): SessionSubkeys {
     indexKey,
     authHash: sodium.to_base64(authHashBytes, sodium.base64_variants.ORIGINAL),
   };
+}
+
+/**
+ * Derives the 32-byte key-encryption-key (KEK) used to wrap/unwrap the random
+ * Vault Key, from a password- or recovery-derived Argon2 key. Domain-separated
+ * from the encryption/index/auth subkeys, so possession of a wrapped Vault Key
+ * envelope reveals nothing without the originating password or recovery key
+ * (Recovery Kit; Property 7: Key Isolation).
+ */
+export function deriveWrapKey(key: Uint8Array): Uint8Array {
+  return sodium.crypto_kdf_derive_from_key(
+    SUBKEY_BYTES,
+    KDF_SUBKEY_ID_WRAP,
+    KDF_CONTEXT_WRAP,
+    key,
+    'uint8array',
+  );
 }

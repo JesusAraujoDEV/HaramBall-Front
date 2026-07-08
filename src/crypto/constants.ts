@@ -33,10 +33,34 @@ export const KDF_SALT_BYTES = 16;
 export const KDF_CONTEXT_ENCRYPTION = 'hb-enc__';
 export const KDF_CONTEXT_INDEX = 'hb-idx__';
 export const KDF_CONTEXT_AUTH = 'hb-auth_';
+/**
+ * Context for the key-encryption-key (KEK) that wraps the random Vault Key.
+ * Derived from the password- or recovery-derived Argon2 key; the KEK never
+ * encrypts data directly, only the Vault Key envelope (Recovery Kit).
+ */
+export const KDF_CONTEXT_WRAP = 'hb-wrap_';
 
 export const KDF_SUBKEY_ID_ENCRYPTION = 1;
 export const KDF_SUBKEY_ID_INDEX = 2;
 export const KDF_SUBKEY_ID_AUTH = 3;
+export const KDF_SUBKEY_ID_WRAP = 4;
+
+/** Output length (bytes) of the random Vault Key that encrypts all data. */
+export const VAULT_KEY_BYTES = 32;
+
+/**
+ * Number of random bytes behind a Recovery Key. 15 bytes = 120 bits, encoded
+ * as 24 base32 chars and shown grouped (`HB-XXXX-XXXX-XXXX-XXXX-XXXX-XXXX`)
+ * for the user to write down. High-entropy enough that the grouped code needs
+ * no extra stretching beyond the Argon2 pass applied on use.
+ */
+export const RECOVERY_KEY_BYTES = 15;
+
+/** Fixed seed for the Recovery Key's Argon2 salt (the code is already high-entropy). */
+export const RECOVERY_KDF_SALT_SEED = 'haramball-recovery-key-v1';
+
+/** Label prefix shown/stored with a Recovery Key code. */
+export const RECOVERY_CODE_PREFIX = 'HB';
 
 /** Output length (bytes) of each derived subkey. */
 export const SUBKEY_BYTES = 32;
