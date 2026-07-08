@@ -51,7 +51,7 @@ export default function RecoverScreen(): React.ReactElement {
     setSubmitting(true);
     try {
       await recoverWithKey(email.trim(), canonicalizeRecoveryCode(code), newPassword);
-      router.replace('/');
+      // The auth gate navigates to the vault once the status is unlocked.
     } catch (err) {
       if (err instanceof ApiError && err.status === 401) {
         setError('That Recovery Key or email is not correct.');

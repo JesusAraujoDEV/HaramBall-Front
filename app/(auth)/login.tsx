@@ -1,29 +1,23 @@
 import React, { useEffect, useRef } from 'react';
 import { ScrollView } from 'react-native';
-import { useRouter } from 'expo-router';
 import { LoginForm } from '../../src/features/auth/LoginForm';
 import useVaultStore from '../../src/vault/vaultStore';
 
 export default function LoginScreen(): React.ReactElement {
-  const router = useRouter();
   const unlockWithBiometrics = useVaultStore((s) => s.unlockWithBiometrics);
   const attemptedRef = useRef(false);
 
-  // Attempt a biometric/session resume once on mount: inside the 24 h
-  // verification window this restores the vault silently; past it, the
-  // platform biometric prompt appears. Failure just leaves the password form.
+  // Attempt a biometric/session resume once on mount. On success the vault
+  // status flips to "unlocked" and the root layout's auth gate navigates to
+  // the vault; failure just leaves the password form. Navigation is never
+  // done here to avoid a double-replace race with the gate.
   useEffect(() => {
     if (attemptedRef.current) return;
     attemptedRef.current = true;
-    void (async () => {
-      try {
-        const unlocked = await unlockWithBiometrics();
-        if (unlocked) router.replace('/');
-      } catch {
-        // Fall back to the password form.
-      }
-    })();
-  }, [unlockWithBiometrics, router]);
+    void unlockWithBiometrics().catch(() => {
+      // Fall back to the password form.
+    });
+  }, [unlockWithBiometrics]);
 
   return (
     <ScrollView

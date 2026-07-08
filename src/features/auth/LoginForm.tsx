@@ -61,11 +61,10 @@ export function LoginForm(): React.ReactElement {
     setFormError(null);
     try {
       const unlocked = await unlockWithBiometrics();
-      if (unlocked) {
-        router.replace('/');
-      } else {
+      if (!unlocked) {
         setFormError('Log in with your master password once first, then fingerprint will work.');
       }
+      // On success the auth gate navigates to the vault (status-driven).
     } catch (err) {
       setFormError(toUserMessage(err));
     } finally {
@@ -103,7 +102,9 @@ export function LoginForm(): React.ReactElement {
         enableBiometrics: true,
         totpCode: needsTotp ? totpCode.trim() : undefined,
       });
-      router.replace('/');
+      // Navigation is handled by the status-driven auth gate in the root
+      // layout; navigating here too caused a double replace that hung the
+      // page on web until a reload.
     } catch (err) {
       if (err instanceof ApiError && err.code === 'TOTP_REQUIRED') {
         // Password accepted; prompt for the authenticator code and retry.

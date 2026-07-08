@@ -70,7 +70,6 @@ describe('LoginForm', () => {
         totpCode: '123456',
       }),
     );
-    await waitFor(() => expect(mockReplace).toHaveBeenCalledWith('/'));
   });
 
   it('shows a rate-limit message with a Retry-After countdown on 429', async () => {
@@ -87,7 +86,7 @@ describe('LoginForm', () => {
     await findByText(/try again in 30s/i);
   });
 
-  it('navigates to the vault on success', async () => {
+  it('unlocks the vault on success (navigation is handled by the auth gate)', async () => {
     const unlockSpy = jest.spyOn(useVaultStore.getState(), 'unlockWithPassword').mockResolvedValue(undefined);
     useVaultStore.setState({ unlockWithPassword: unlockSpy as unknown as VaultState['unlockWithPassword'] });
 
@@ -101,7 +100,9 @@ describe('LoginForm', () => {
         enableBiometrics: true,
       }),
     );
-    await waitFor(() => expect(mockReplace).toHaveBeenCalledWith('/'));
+    // The form no longer navigates itself (that caused a double-replace hang);
+    // the status-driven gate in the root layout routes to the vault.
+    expect(mockReplace).not.toHaveBeenCalled();
   });
 
   it('guards against duplicate submissions while a request is in flight', async () => {
