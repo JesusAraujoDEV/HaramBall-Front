@@ -4,7 +4,7 @@ import type { EntryResponse } from '../api/schemas';
 import { encrypt, decrypt } from '../crypto/cipher';
 import { blindIndex, buildTitlePrefixIndex } from '../crypto/blindIndex';
 import { parseEntryText, serializeEntryText } from '../utils/entryText';
-import type { PlainEntry, SessionKeys } from './types';
+import type { PlainBodyVersion, PlainEntry, SessionKeys } from './types';
 
 /**
  * Decrypts a backend `EntryResponse` into a `PlainEntry`. Never throws: a
@@ -79,6 +79,17 @@ export const EntryService = {
 
   async remove(id: string): Promise<void> {
     await entriesApi.remove(id);
+  },
+
+  async history(id: string, keys: SessionKeys): Promise<PlainBodyVersion[]> {
+    const versions = await entriesApi.history(id);
+    return versions.map((v) => {
+      try {
+        return { id: v.id, body: decrypt(v.bodyCiphertext, keys.encryptionKey), changedAt: v.changedAt };
+      } catch {
+        return { id: v.id, body: '', changedAt: v.changedAt, decryptError: true };
+      }
+    });
   },
 };
 

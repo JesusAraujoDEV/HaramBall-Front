@@ -27,14 +27,16 @@ export function FieldCopyRow({ label, value, testID }: Props): React.ReactElemen
   return (
     <Pressable
       onPress={handleCopy}
-      className="flex-row items-center justify-between border-b border-gray-100 px-4 py-3"
+      className="flex-row items-center justify-between border-b border-zinc-100 px-4 py-3 active:bg-zinc-50 dark:border-zinc-800 dark:active:bg-zinc-800"
       testID={testID ?? `field-copy-${label}`}
     >
       <View className="flex-1">
-        <Text className="text-xs uppercase text-gray-400">{label}</Text>
-        <Text className="text-base text-gray-900">{value}</Text>
+        <Text className="text-xs font-medium uppercase tracking-wider text-zinc-400 dark:text-zinc-500">{label}</Text>
+        <Text className="mt-0.5 text-base text-zinc-900 dark:text-zinc-50">{value}</Text>
       </View>
-      <Text className="ml-2 text-blue-600">{copied ? 'Copied!' : 'Copy'}</Text>
+      <View className="ml-2 rounded-full bg-zinc-100 px-3 py-1 dark:bg-zinc-800">
+        <Text className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{copied ? 'Copied!' : 'Copy'}</Text>
+      </View>
     </Pressable>
   );
 }

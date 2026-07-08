@@ -1,10 +1,13 @@
 import '../global.css';
 import React, { useEffect, useState } from 'react';
 import { Stack, useRouter, useSegments } from 'expo-router';
+import { StatusBar } from 'expo-status-bar';
+import { useColorScheme } from 'nativewind';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ready as sodiumReady } from '../src/crypto/sodium';
 import { getEnv } from '../src/config/env';
 import useVaultStore from '../src/vault/vaultStore';
+import useThemeStore from '../src/theme/themeStore';
 import { startAutolock } from '../src/vault/autolock';
 import { ErrorBoundary } from '../src/ui/ErrorBoundary';
 import { LockOverlay } from '../src/ui/LockOverlay';
@@ -38,18 +41,21 @@ function useAuthGate(ready: boolean): void {
 
 export default function RootLayout(): React.ReactElement | null {
   const [ready, setReady] = useState(false);
+  const hydrateTheme = useThemeStore((s) => s.hydrate);
+  const { colorScheme } = useColorScheme();
+  const isDark = colorScheme === 'dark';
 
   useEffect(() => {
     let cancelled = false;
     (async () => {
       getEnv(); // fail fast on misconfiguration (Requirement 14.1, 15.5)
-      await sodiumReady;
+      await Promise.all([sodiumReady, hydrateTheme()]);
       if (!cancelled) setReady(true);
     })();
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [hydrateTheme]);
 
   useEffect(() => {
     const stop = startAutolock();
@@ -65,7 +71,15 @@ export default function RootLayout(): React.ReactElement | null {
   return (
     <ErrorBoundary>
       <QueryClientProvider client={queryClient}>
-        <Stack screenOptions={{ headerShown: false }} />
+        <StatusBar style={isDark ? 'light' : 'dark'} />
+        <Stack
+          screenOptions={{
+            headerShown: false,
+            // Match the themed screen background so navigation transitions
+            // never flash the platform default white.
+            contentStyle: { backgroundColor: isDark ? '#09090b' : '#fafafa' },
+          }}
+        />
         <LockOverlay />
       </QueryClientProvider>
     </ErrorBoundary>

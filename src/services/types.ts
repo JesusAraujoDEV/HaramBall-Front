@@ -13,6 +13,15 @@ export interface AuthTokens {
   refreshToken: string;
 }
 
+/** Decrypted, in-memory-only representation of a superseded entry body. */
+export interface PlainBodyVersion {
+  id: string;
+  body: string;
+  changedAt: string;
+  /** Set when decryption of this version failed; body may be empty. */
+  decryptError?: boolean;
+}
+
 /** Decrypted, in-memory-only representation of an Entry. */
 export interface PlainEntry {
   id: string;

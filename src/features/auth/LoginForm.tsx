@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { View, Text, TextInput, Pressable, ActivityIndicator } from 'react-native';
 import { useRouter } from 'expo-router';
+import { useColorScheme } from 'nativewind';
 import useVaultStore from '../../vault/vaultStore';
 import { ApiError } from '../../api/errors';
 import { getRetryAfterSeconds, toUserMessage } from '../../utils/errorMessages';
@@ -13,6 +14,7 @@ import { loginSchema } from './schemas';
  */
 export function LoginForm(): React.ReactElement {
   const router = useRouter();
+  const { colorScheme } = useColorScheme();
   const unlockWithPassword = useVaultStore((s) => s.unlockWithPassword);
 
   const [email, setEmail] = useState('');
@@ -80,23 +82,23 @@ export function LoginForm(): React.ReactElement {
   const isRateLimited = retryAfter !== null && retryAfter > 0;
 
   return (
-    <View className="w-full max-w-md gap-5 self-center rounded-3xl border border-slate-200 bg-white p-8 shadow-xl">
+    <View className="w-full max-w-md gap-5 self-center rounded-3xl border border-zinc-200 bg-white p-8 shadow-xl dark:border-zinc-800 dark:bg-zinc-900">
       <View className="items-center gap-3">
-        <View className="h-14 w-14 items-center justify-center rounded-2xl bg-blue-600 shadow-md">
-          <Text className="text-2xl font-bold text-white">H</Text>
+        <View className="h-14 w-14 items-center justify-center rounded-2xl bg-zinc-900 dark:bg-zinc-50">
+          <Text className="text-2xl font-bold text-white dark:text-zinc-900">H</Text>
         </View>
         <View className="items-center">
-          <Text className="text-2xl font-bold text-slate-900">Welcome back</Text>
-          <Text className="mt-1 text-sm text-slate-500">Sign in to unlock your vault</Text>
+          <Text className="text-2xl font-bold text-zinc-900 dark:text-zinc-50">Welcome back</Text>
+          <Text className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">Sign in to unlock your vault</Text>
         </View>
       </View>
 
       <View className="gap-1.5">
-        <Text className="text-sm font-medium text-slate-700">Email</Text>
+        <Text className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Email</Text>
         <TextInput
-          className="h-12 rounded-xl border border-slate-300 bg-slate-50 px-4 text-base text-slate-900 focus:border-blue-500 focus:bg-white"
+          className="h-12 rounded-xl border border-zinc-300 bg-zinc-50 px-4 text-base text-zinc-900 focus:border-zinc-500 focus:bg-white dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-50 dark:focus:border-zinc-400"
           placeholder="you@example.com"
-          placeholderTextColor="#94a3b8"
+          placeholderTextColor="#a1a1aa"
           autoCapitalize="none"
           autoComplete="email"
           keyboardType="email-address"
@@ -104,28 +106,28 @@ export function LoginForm(): React.ReactElement {
           onChangeText={setEmail}
           testID="login-email"
         />
-        {fieldErrors.email ? <Text className="text-sm text-red-600">{fieldErrors.email}</Text> : null}
+        {fieldErrors.email ? <Text className="text-sm text-red-600 dark:text-red-400">{fieldErrors.email}</Text> : null}
       </View>
 
       <View className="gap-1.5">
-        <Text className="text-sm font-medium text-slate-700">Master Password</Text>
+        <Text className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Master Password</Text>
         <TextInput
-          className="h-12 rounded-xl border border-slate-300 bg-slate-50 px-4 text-base text-slate-900 focus:border-blue-500 focus:bg-white"
+          className="h-12 rounded-xl border border-zinc-300 bg-zinc-50 px-4 text-base text-zinc-900 focus:border-zinc-500 focus:bg-white dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-50 dark:focus:border-zinc-400"
           placeholder="••••••••••••"
-          placeholderTextColor="#94a3b8"
+          placeholderTextColor="#a1a1aa"
           secureTextEntry
           value={masterPassword}
           onChangeText={setMasterPassword}
           testID="login-password"
         />
         {fieldErrors.masterPassword ? (
-          <Text className="text-sm text-red-600">{fieldErrors.masterPassword}</Text>
+          <Text className="text-sm text-red-600 dark:text-red-400">{fieldErrors.masterPassword}</Text>
         ) : null}
       </View>
 
       {formError ? (
-        <View className="rounded-xl border border-red-200 bg-red-50 px-4 py-3">
-          <Text className="text-sm text-red-700">
+        <View className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 dark:border-red-900 dark:bg-red-950">
+          <Text className="text-sm text-red-700 dark:text-red-300">
             {isRateLimited ? `Too many attempts. Try again in ${retryAfter}s.` : formError}
           </Text>
         </View>
@@ -134,19 +136,19 @@ export function LoginForm(): React.ReactElement {
       <Pressable
         onPress={handleSubmit}
         disabled={submitting || isRateLimited}
-        className="mt-1 h-12 items-center justify-center rounded-xl bg-blue-600 shadow-sm active:bg-blue-700 disabled:opacity-60"
+        className="mt-1 h-12 items-center justify-center rounded-xl bg-zinc-900 shadow-sm active:bg-zinc-700 disabled:opacity-60 dark:bg-zinc-50 dark:active:bg-zinc-300"
         testID="login-submit"
       >
         {submitting ? (
-          <ActivityIndicator color="#fff" />
+          <ActivityIndicator color={colorScheme === 'dark' ? '#18181b' : '#fff'} />
         ) : (
-          <Text className="text-base font-semibold text-white">Log in</Text>
+          <Text className="text-base font-semibold text-white dark:text-zinc-900">Log in</Text>
         )}
       </Pressable>
 
       <Pressable onPress={() => router.replace('/register')} className="py-1">
-        <Text className="text-center text-sm text-slate-500">
-          Need an account? <Text className="font-semibold text-blue-600">Register</Text>
+        <Text className="text-center text-sm text-zinc-500 dark:text-zinc-400">
+          Need an account? <Text className="font-semibold text-zinc-900 underline dark:text-zinc-50">Register</Text>
         </Text>
       </Pressable>
     </View>

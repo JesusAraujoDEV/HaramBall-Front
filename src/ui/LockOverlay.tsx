@@ -55,13 +55,18 @@ export function LockOverlay(): React.ReactElement | null {
       entering={FadeIn}
       exiting={FadeOut}
       style={StyleSheet.absoluteFill}
-      className="items-center justify-center bg-white"
+      className="items-center justify-center bg-white dark:bg-zinc-950"
       testID="lock-overlay"
     >
       <View className="items-center px-6">
-        <Text className="text-2xl font-bold text-gray-900">HaramBall</Text>
+        <View className="mb-4 h-14 w-14 items-center justify-center rounded-2xl bg-zinc-900 dark:bg-zinc-50">
+          <Text className="text-2xl font-bold text-white dark:text-zinc-900">H</Text>
+        </View>
+        <Text className="text-2xl font-bold text-zinc-900 dark:text-zinc-50">HaramBall</Text>
         {status !== 'unlocked' ? (
-          <Text className="mt-2 text-gray-500">{status === 'unlocking' ? 'Unlocking…' : 'Vault locked'}</Text>
+          <Text className="mt-2 text-zinc-500 dark:text-zinc-400">
+            {status === 'unlocking' ? 'Unlocking…' : 'Vault locked'}
+          </Text>
         ) : null}
       </View>
     </Animated.View>

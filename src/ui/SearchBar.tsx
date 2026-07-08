@@ -42,15 +42,16 @@ export function SearchBar({
   }, []);
 
   return (
-    <View className="border-b border-gray-200 px-4 py-2">
+    <View className="px-4 pb-2 pt-1">
       <TextInput
         testID={testID}
         value={text}
         onChangeText={handleChange}
         placeholder={placeholder}
+        placeholderTextColor="#a1a1aa"
         autoCapitalize="none"
         autoCorrect={false}
-        className="rounded-full bg-gray-100 px-4 py-2 text-base"
+        className="rounded-2xl border border-zinc-200 bg-white px-4 py-2.5 text-base text-zinc-900 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-50"
       />
     </View>
   );

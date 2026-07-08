@@ -1,9 +1,11 @@
 import { request } from './client';
 import {
   createEntryResponseSchema,
+  entryHistoryResponseSchema,
   entryListResponseSchema,
   entryResponseSchema,
   type CreateEntryResponse,
+  type EntryBodyVersion,
   type EntryResponse,
 } from './schemas';
 
@@ -34,4 +36,8 @@ export function update(id: string, payload: EntryPayload): Promise<EntryResponse
 
 export function remove(id: string): Promise<void> {
   return request({ method: 'DELETE', path: `/entries/${id}` });
+}
+
+export function history(id: string): Promise<EntryBodyVersion[]> {
+  return request({ method: 'GET', path: `/entries/${id}/history`, schema: entryHistoryResponseSchema });
 }

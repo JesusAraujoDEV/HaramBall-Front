@@ -57,6 +57,16 @@ export type CreateEntryResponse = z.infer<typeof createEntryResponseSchema>;
 
 export const entryListResponseSchema = z.array(entryResponseSchema);
 
+/** Matches backend `EntryBodyVersionResponse` (`src/entries/entries.service.ts`). */
+export const entryBodyVersionSchema = z.object({
+  id: z.string(),
+  bodyCiphertext: z.string(),
+  changedAt: z.string(),
+});
+export type EntryBodyVersion = z.infer<typeof entryBodyVersionSchema>;
+
+export const entryHistoryResponseSchema = z.array(entryBodyVersionSchema);
+
 export const searchResponseSchema = z.object({
   entries: z.array(entryResponseSchema),
 });

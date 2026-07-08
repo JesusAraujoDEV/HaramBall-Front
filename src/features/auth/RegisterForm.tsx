@@ -1,6 +1,7 @@
 import React, { useRef, useState } from 'react';
 import { View, Text, TextInput, Pressable, ActivityIndicator } from 'react-native';
 import { useRouter } from 'expo-router';
+import { useColorScheme } from 'nativewind';
 import { AuthService } from '../../services/AuthService';
 import { ApiError } from '../../api/errors';
 import { toUserMessage } from '../../utils/errorMessages';
@@ -13,6 +14,7 @@ import { registerSchema } from './schemas';
  */
 export function RegisterForm(): React.ReactElement {
   const router = useRouter();
+  const { colorScheme } = useColorScheme();
   const [email, setEmail] = useState('');
   const [masterPassword, setMasterPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -62,31 +64,31 @@ export function RegisterForm(): React.ReactElement {
   }
 
   return (
-    <View className="w-full max-w-md gap-5 self-center rounded-3xl border border-slate-200 bg-white p-8 shadow-xl">
+    <View className="w-full max-w-md gap-5 self-center rounded-3xl border border-zinc-200 bg-white p-8 shadow-xl dark:border-zinc-800 dark:bg-zinc-900">
       <View className="items-center gap-3">
-        <View className="h-14 w-14 items-center justify-center rounded-2xl bg-blue-600 shadow-md">
-          <Text className="text-2xl font-bold text-white">H</Text>
+        <View className="h-14 w-14 items-center justify-center rounded-2xl bg-zinc-900 dark:bg-zinc-50">
+          <Text className="text-2xl font-bold text-white dark:text-zinc-900">H</Text>
         </View>
         <View className="items-center">
-          <Text className="text-2xl font-bold text-slate-900">Create your vault</Text>
-          <Text className="mt-1 text-sm text-slate-500">Set up your encrypted password vault</Text>
+          <Text className="text-2xl font-bold text-zinc-900 dark:text-zinc-50">Create your vault</Text>
+          <Text className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">Set up your encrypted password vault</Text>
         </View>
       </View>
 
-      <View className="flex-row gap-3 rounded-xl border border-amber-200 bg-amber-50 p-3">
+      <View className="flex-row gap-3 rounded-xl border border-amber-200 bg-amber-50 p-3 dark:border-amber-900 dark:bg-amber-950">
         <Text className="text-base">⚠️</Text>
-        <Text className="flex-1 text-sm leading-5 text-amber-800">
+        <Text className="flex-1 text-sm leading-5 text-amber-800 dark:text-amber-200">
           Your Master Password cannot be recovered. If you forget it, your existing entries become
           permanently unreadable.
         </Text>
       </View>
 
       <View className="gap-1.5">
-        <Text className="text-sm font-medium text-slate-700">Email</Text>
+        <Text className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Email</Text>
         <TextInput
-          className="h-12 rounded-xl border border-slate-300 bg-slate-50 px-4 text-base text-slate-900 focus:border-blue-500 focus:bg-white"
+          className="h-12 rounded-xl border border-zinc-300 bg-zinc-50 px-4 text-base text-zinc-900 focus:border-zinc-500 focus:bg-white dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-50 dark:focus:border-zinc-400"
           placeholder="you@example.com"
-          placeholderTextColor="#94a3b8"
+          placeholderTextColor="#a1a1aa"
           autoCapitalize="none"
           autoComplete="email"
           keyboardType="email-address"
@@ -94,63 +96,63 @@ export function RegisterForm(): React.ReactElement {
           onChangeText={setEmail}
           testID="register-email"
         />
-        {fieldErrors.email ? <Text className="text-sm text-red-600">{fieldErrors.email}</Text> : null}
+        {fieldErrors.email ? <Text className="text-sm text-red-600 dark:text-red-400">{fieldErrors.email}</Text> : null}
       </View>
 
       <View className="gap-1.5">
-        <Text className="text-sm font-medium text-slate-700">Master Password</Text>
+        <Text className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Master Password</Text>
         <TextInput
-          className="h-12 rounded-xl border border-slate-300 bg-slate-50 px-4 text-base text-slate-900 focus:border-blue-500 focus:bg-white"
+          className="h-12 rounded-xl border border-zinc-300 bg-zinc-50 px-4 text-base text-zinc-900 focus:border-zinc-500 focus:bg-white dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-50 dark:focus:border-zinc-400"
           placeholder="••••••••••••"
-          placeholderTextColor="#94a3b8"
+          placeholderTextColor="#a1a1aa"
           secureTextEntry
           value={masterPassword}
           onChangeText={setMasterPassword}
           testID="register-password"
         />
         {fieldErrors.masterPassword ? (
-          <Text className="text-sm text-red-600">{fieldErrors.masterPassword}</Text>
+          <Text className="text-sm text-red-600 dark:text-red-400">{fieldErrors.masterPassword}</Text>
         ) : null}
       </View>
 
       <View className="gap-1.5">
-        <Text className="text-sm font-medium text-slate-700">Confirm Master Password</Text>
+        <Text className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Confirm Master Password</Text>
         <TextInput
-          className="h-12 rounded-xl border border-slate-300 bg-slate-50 px-4 text-base text-slate-900 focus:border-blue-500 focus:bg-white"
+          className="h-12 rounded-xl border border-zinc-300 bg-zinc-50 px-4 text-base text-zinc-900 focus:border-zinc-500 focus:bg-white dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-50 dark:focus:border-zinc-400"
           placeholder="••••••••••••"
-          placeholderTextColor="#94a3b8"
+          placeholderTextColor="#a1a1aa"
           secureTextEntry
           value={confirmPassword}
           onChangeText={setConfirmPassword}
           testID="register-confirm-password"
         />
         {fieldErrors.confirmPassword ? (
-          <Text className="text-sm text-red-600">{fieldErrors.confirmPassword}</Text>
+          <Text className="text-sm text-red-600 dark:text-red-400">{fieldErrors.confirmPassword}</Text>
         ) : null}
       </View>
 
       {formError ? (
-        <View className="rounded-xl border border-red-200 bg-red-50 px-4 py-3">
-          <Text className="text-sm text-red-700">{formError}</Text>
+        <View className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 dark:border-red-900 dark:bg-red-950">
+          <Text className="text-sm text-red-700 dark:text-red-300">{formError}</Text>
         </View>
       ) : null}
 
       <Pressable
         onPress={handleSubmit}
         disabled={submitting}
-        className="mt-1 h-12 items-center justify-center rounded-xl bg-blue-600 shadow-sm active:bg-blue-700 disabled:opacity-60"
+        className="mt-1 h-12 items-center justify-center rounded-xl bg-zinc-900 shadow-sm active:bg-zinc-700 disabled:opacity-60 dark:bg-zinc-50 dark:active:bg-zinc-300"
         testID="register-submit"
       >
         {submitting ? (
-          <ActivityIndicator color="#fff" />
+          <ActivityIndicator color={colorScheme === 'dark' ? '#18181b' : '#fff'} />
         ) : (
-          <Text className="text-base font-semibold text-white">Register</Text>
+          <Text className="text-base font-semibold text-white dark:text-zinc-900">Register</Text>
         )}
       </Pressable>
 
       <Pressable onPress={() => router.replace('/login')} className="py-1">
-        <Text className="text-center text-sm text-slate-500">
-          Already have an account? <Text className="font-semibold text-blue-600">Log in</Text>
+        <Text className="text-center text-sm text-zinc-500 dark:text-zinc-400">
+          Already have an account? <Text className="font-semibold text-zinc-900 underline dark:text-zinc-50">Log in</Text>
         </Text>
       </Pressable>
     </View>

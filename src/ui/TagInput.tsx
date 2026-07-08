@@ -32,11 +32,11 @@ export function TagInput({ tags, onChange }: Props): React.ReactElement {
           <Pressable
             key={tag}
             onPress={() => removeTag(tag)}
-            className="flex-row items-center rounded-full bg-blue-50 px-3 py-1"
+            className="flex-row items-center rounded-full bg-zinc-100 px-3 py-1 dark:bg-zinc-800"
             testID={`tag-chip-${tag}`}
           >
-            <Text className="text-sm text-blue-700">{tag}</Text>
-            <Text className="ml-1 text-blue-700">×</Text>
+            <Text className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{tag}</Text>
+            <Text className="ml-1.5 text-zinc-400 dark:text-zinc-500">×</Text>
           </Pressable>
         ))}
       </View>
@@ -46,12 +46,17 @@ export function TagInput({ tags, onChange }: Props): React.ReactElement {
           onChangeText={setDraft}
           onSubmitEditing={addTag}
           placeholder="Add a tag"
+          placeholderTextColor="#a1a1aa"
           autoCapitalize="none"
-          className="flex-1 rounded-lg border border-gray-300 px-3 py-2"
+          className="flex-1 rounded-xl border border-zinc-300 bg-white px-3 py-2 text-zinc-900 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-50"
           testID="tag-input"
         />
-        <Pressable onPress={addTag} className="items-center justify-center rounded-lg bg-gray-200 px-4" testID="tag-add">
-          <Text className="text-gray-700">Add</Text>
+        <Pressable
+          onPress={addTag}
+          className="items-center justify-center rounded-xl bg-zinc-100 px-4 active:bg-zinc-200 dark:bg-zinc-800 dark:active:bg-zinc-700"
+          testID="tag-add"
+        >
+          <Text className="font-medium text-zinc-700 dark:text-zinc-300">Add</Text>
         </Pressable>
       </View>
     </View>

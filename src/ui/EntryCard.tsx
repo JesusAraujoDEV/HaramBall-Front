@@ -8,7 +8,7 @@ interface Props {
 }
 
 /**
- * Chat-style list row: decrypted title, tag chips, and an expand affordance
+ * Vault list card: decrypted title, tag chips, and an expand affordance
  * (tap navigates to the detail screen for the body/copy actions). Shows a
  * distinct state for entries that failed to decrypt so one bad entry never
  * crashes the list (Requirement 7.3).
@@ -16,8 +16,11 @@ interface Props {
 export function EntryCard({ entry, onPress }: Props): React.ReactElement {
   if (entry.decryptError) {
     return (
-      <View className="border-b border-gray-100 px-4 py-3" testID={`entry-card-${entry.id}`}>
-        <Text className="text-red-600">Could not decrypt this entry</Text>
+      <View
+        className="mx-4 mb-2 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 dark:border-red-900 dark:bg-red-950"
+        testID={`entry-card-${entry.id}`}
+      >
+        <Text className="text-red-600 dark:text-red-400">Could not decrypt this entry</Text>
       </View>
     );
   }
@@ -25,24 +28,24 @@ export function EntryCard({ entry, onPress }: Props): React.ReactElement {
   return (
     <Pressable
       onPress={() => onPress(entry)}
-      className="flex-row items-center justify-between border-b border-gray-100 px-4 py-3"
+      className="mx-4 mb-2 flex-row items-center justify-between rounded-2xl border border-zinc-200 bg-white px-4 py-3.5 active:bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-900 dark:active:bg-zinc-800"
       testID={`entry-card-${entry.id}`}
     >
       <View className="flex-1">
-        <Text className="text-base font-medium text-gray-900" numberOfLines={1}>
+        <Text className="text-base font-semibold text-zinc-900 dark:text-zinc-50" numberOfLines={1}>
           {entry.title}
         </Text>
         {entry.tags.length > 0 ? (
-          <View className="mt-1 flex-row flex-wrap gap-1">
+          <View className="mt-1.5 flex-row flex-wrap gap-1.5">
             {entry.tags.map((tag) => (
-              <View key={tag} className="rounded-full bg-blue-50 px-2 py-0.5">
-                <Text className="text-xs text-blue-700">{tag}</Text>
+              <View key={tag} className="rounded-full bg-zinc-100 px-2.5 py-0.5 dark:bg-zinc-800">
+                <Text className="text-xs font-medium text-zinc-600 dark:text-zinc-300">{tag}</Text>
               </View>
             ))}
           </View>
         ) : null}
       </View>
-      <Text className="ml-2 text-gray-400">{'>'}</Text>
+      <Text className="ml-3 text-lg text-zinc-300 dark:text-zinc-600">›</Text>
     </Pressable>
   );
 }
