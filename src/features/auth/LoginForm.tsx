@@ -7,6 +7,7 @@ import biometricAdapter from '../../platform/biometric';
 import { ApiError } from '../../api/errors';
 import { getRetryAfterSeconds, toUserMessage } from '../../utils/errorMessages';
 import { loginSchema } from './schemas';
+import { PasswordInput } from '../../ui/PasswordInput';
 
 /**
  * Login form: email + Master_Password, generic 401 message (never reveals
@@ -161,13 +162,10 @@ export function LoginForm(): React.ReactElement {
 
       <View className="gap-1.5">
         <Text className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Master Password</Text>
-        <TextInput
-          className="h-12 rounded-xl border border-zinc-300 bg-zinc-50 px-4 text-base text-zinc-900 focus:border-zinc-500 focus:bg-white dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-50 dark:focus:border-zinc-400 dark:focus:bg-zinc-950"
-          placeholder="••••••••••••"
-          placeholderTextColor="#a1a1aa"
-          secureTextEntry
+        <PasswordInput
           value={masterPassword}
           onChangeText={setMasterPassword}
+          autoComplete="current-password"
           testID="login-password"
         />
         {fieldErrors.masterPassword ? (

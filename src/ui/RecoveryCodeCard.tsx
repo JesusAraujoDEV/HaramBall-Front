@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Pressable, Text, View } from 'react-native';
+import { Linking, Pressable, Text, View } from 'react-native';
 import clipboardAdapter from '../platform/clipboard';
 
 interface Props {
@@ -8,9 +8,10 @@ interface Props {
 }
 
 /**
- * Prominent one-time display of a Recovery Key, with a copy action and a
- * clear "write this down" warning. Shown at registration, after regenerating,
- * and never retrievable again afterward (the app doesn't store it).
+ * Prominent one-time display of a Recovery Key, with a copy action, WhatsApp
+ * share, and a clear "write this down" warning. Shown at registration, after
+ * regenerating, and never retrievable again afterward (the app doesn't store
+ * it).
  */
 export function RecoveryCodeCard({ code, testID }: Props): React.ReactElement {
   const [copied, setCopied] = useState(false);
@@ -19,6 +20,12 @@ export function RecoveryCodeCard({ code, testID }: Props): React.ReactElement {
     await clipboardAdapter.copy(code);
     setCopied(true);
     setTimeout(() => setCopied(false), 1500);
+  }
+
+  function handleWhatsApp(): void {
+    const message = `🔐 HaramBall Recovery Key (guarda esto en un lugar seguro):\n\n${code}\n\n⚠️ No compartas este código con nadie. Es la única forma de recuperar tu bóveda si olvidas tu contraseña.`;
+    const url = `https://wa.me/?text=${encodeURIComponent(message)}`;
+    void Linking.openURL(url);
   }
 
   return (
@@ -46,6 +53,14 @@ export function RecoveryCodeCard({ code, testID }: Props): React.ReactElement {
         <Text className="text-sm font-semibold text-amber-900 dark:text-amber-200">
           {copied ? 'Copied!' : 'Copy code'}
         </Text>
+      </Pressable>
+      <Pressable
+        onPress={handleWhatsApp}
+        className="flex-row items-center justify-center gap-2 rounded-xl bg-green-600 py-2.5 active:opacity-80 dark:bg-green-700"
+        testID="recovery-code-whatsapp"
+      >
+        <Text className="text-lg">💬</Text>
+        <Text className="text-sm font-semibold text-white">Save to WhatsApp</Text>
       </Pressable>
     </View>
   );

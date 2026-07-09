@@ -8,6 +8,7 @@ import { parseStructuredBody, serializeStructuredBody, type EntryField } from '.
 import { TagInput } from '../../ui/TagInput';
 import { ApiError } from '../../api/errors';
 import { toUserMessage } from '../../utils/errorMessages';
+import { generatePassword } from '../../utils/passwordGenerator';
 import type { PlainEntry } from '../../services/types';
 
 interface Props {
@@ -153,6 +154,18 @@ export function EntryEditor({ mode, entryId, initialEntry }: Props): React.React
                 className="flex-1 text-base text-zinc-900 dark:text-zinc-50"
                 testID={`entry-field-value-${index}`}
               />
+              {field.label.toLowerCase().includes('password') ||
+              field.label.toLowerCase().includes('contraseña') ||
+              field.label.toLowerCase().includes('clave') ? (
+                <Pressable
+                  onPress={() => updateField(index, { value: generatePassword('strong') })}
+                  hitSlop={8}
+                  className="rounded-lg bg-zinc-100 px-2 py-1 active:opacity-70 dark:bg-zinc-800"
+                  testID={`entry-field-gen-${index}`}
+                >
+                  <Text className="text-xs">🎲</Text>
+                </Pressable>
+              ) : null}
               <Pressable onPress={() => removeField(index)} testID={`entry-field-remove-${index}`} hitSlop={8}>
                 <Text className="text-lg text-zinc-400 dark:text-zinc-500">×</Text>
               </Pressable>

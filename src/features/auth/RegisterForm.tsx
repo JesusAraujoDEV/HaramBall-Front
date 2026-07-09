@@ -7,6 +7,7 @@ import { ApiError } from '../../api/errors';
 import { toUserMessage } from '../../utils/errorMessages';
 import { RecoveryCodeCard } from '../../ui/RecoveryCodeCard';
 import { registerSchema } from './schemas';
+import { PasswordInput } from '../../ui/PasswordInput';
 
 /**
  * Registration form: email + Master_Password + confirmation, blocking
@@ -131,13 +132,11 @@ export function RegisterForm(): React.ReactElement {
 
       <View className="gap-1.5">
         <Text className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Master Password</Text>
-        <TextInput
-          className="h-12 rounded-xl border border-zinc-300 bg-zinc-50 px-4 text-base text-zinc-900 focus:border-zinc-500 focus:bg-white dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-50 dark:focus:border-zinc-400 dark:focus:bg-zinc-950"
-          placeholder="••••••••••••"
-          placeholderTextColor="#a1a1aa"
-          secureTextEntry
+        <PasswordInput
           value={masterPassword}
           onChangeText={setMasterPassword}
+          autoComplete="new-password"
+          showGenerator
           testID="register-password"
         />
         {fieldErrors.masterPassword ? (
@@ -147,13 +146,10 @@ export function RegisterForm(): React.ReactElement {
 
       <View className="gap-1.5">
         <Text className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Confirm Master Password</Text>
-        <TextInput
-          className="h-12 rounded-xl border border-zinc-300 bg-zinc-50 px-4 text-base text-zinc-900 focus:border-zinc-500 focus:bg-white dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-50 dark:focus:border-zinc-400 dark:focus:bg-zinc-950"
-          placeholder="••••••••••••"
-          placeholderTextColor="#a1a1aa"
-          secureTextEntry
+        <PasswordInput
           value={confirmPassword}
           onChangeText={setConfirmPassword}
+          autoComplete="new-password"
           testID="register-confirm-password"
         />
         {fieldErrors.confirmPassword ? (

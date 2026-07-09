@@ -7,6 +7,7 @@ import { canonicalizeRecoveryCode } from '../../src/crypto/recovery';
 import { ApiError } from '../../src/api/errors';
 import { DecryptionError } from '../../src/crypto/errors';
 import { toUserMessage } from '../../src/utils/errorMessages';
+import { PasswordInput } from '../../src/ui/PasswordInput';
 
 /**
  * Recovery flow: the user enters their email, Recovery Key, and a new master
@@ -110,26 +111,21 @@ export default function RecoverScreen(): React.ReactElement {
 
         <View className="gap-1.5">
           <Text className="text-sm font-medium text-zinc-700 dark:text-zinc-300">New master password</Text>
-          <TextInput
-            className="h-12 rounded-xl border border-zinc-300 bg-zinc-50 px-4 text-base text-zinc-900 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-50"
-            placeholder="••••••••••••"
-            placeholderTextColor="#a1a1aa"
-            secureTextEntry
+          <PasswordInput
             value={newPassword}
             onChangeText={setNewPassword}
+            autoComplete="new-password"
+            showGenerator
             testID="recover-password"
           />
         </View>
 
         <View className="gap-1.5">
           <Text className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Confirm new password</Text>
-          <TextInput
-            className="h-12 rounded-xl border border-zinc-300 bg-zinc-50 px-4 text-base text-zinc-900 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-50"
-            placeholder="••••••••••••"
-            placeholderTextColor="#a1a1aa"
-            secureTextEntry
+          <PasswordInput
             value={confirm}
             onChangeText={setConfirm}
+            autoComplete="new-password"
             testID="recover-confirm"
           />
         </View>
