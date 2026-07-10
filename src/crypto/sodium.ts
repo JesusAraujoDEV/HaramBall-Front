@@ -1,19 +1,23 @@
+import { Platform } from 'react-native';
 import type { SodiumApi } from './sodiumApi';
 
 /**
- * Single entry point for the libsodium implementation. We use
- * `libsodium-wrappers-sumo` (pure JS/asm.js, includes Argon2id
- * `crypto_pwhash`) on **every** platform — web, iOS and Android.
+ * Single entry point for libsodium. Selects the implementation at runtime:
+ *  - web / Node / Jest → `libsodium-wrappers-sumo` (WASM, works in browsers).
+ *  - native (iOS/Android) → `react-native-libsodium` (JSI), because Hermes has
+ *    no WebAssembly and the WASM build crashes the app on launch.
  *
- * A single implementation everywhere guarantees that data encrypted on one
- * platform decrypts byte-for-byte on another (web ⇄ mobile), which the native
- * `react-native-libsodium` JSI module cannot guarantee against the JS build.
- * It also keeps the app free of custom native modules. The trade-off is that
- * Argon2id key derivation runs in JS on device and is slower than native.
+ * Both are the real libsodium, so ciphertext/keys are byte-identical across
+ * platforms. Branching on `Platform.OS` (mirroring `src/platform/secureStore`)
+ * keeps this testable under Jest, which forces `Platform.OS = 'web'`.
  */
 function loadSodium(): SodiumApi {
+  if (Platform.OS === 'web') {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    return (require('./sodiumWeb') as { default: SodiumApi }).default;
+  }
   // eslint-disable-next-line @typescript-eslint/no-require-imports
-  return require('libsodium-wrappers-sumo') as SodiumApi;
+  return (require('./sodiumNative') as { default: SodiumApi }).default;
 }
 
 const sodium: SodiumApi = loadSodium();
