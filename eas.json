@@ -4,6 +4,19 @@
     "appVersionSource": "remote"
   },
   "build": {
+    "development": {
+      "distribution": "internal",
+      "developmentClient": true,
+      "android": {
+        "buildType": "apk"
+      },
+      "env": {
+        "EXPO_PUBLIC_API_BASE_URL": "https://haramball-back.jesusaraujo.lat",
+        "EXPO_PUBLIC_LOCK_TIMEOUT_MS": "60000",
+        "EXPO_PUBLIC_CLIPBOARD_CLEAR_MS": "20000",
+        "EXPO_PUBLIC_ARGON2_PROFILE": "interactive"
+      }
+    },
     "preview": {
       "distribution": "internal",
       "android": {
